@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'a_incidents',  # Custom app for incidents
+    'django_cotton',
 ]
 
 MIDDLEWARE = [

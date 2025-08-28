@@ -54,5 +54,7 @@ def update_incident(request, pk):
             return redirect('home')
     else:
         form = IncidentForm(instance=incident)
+    print(incident.title, incident.description)
+
 
     return render(request, 'a_incidents/incident_form.html', {'form': form})
