@@ -9,6 +9,7 @@ class Incident(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     offender_name = models.CharField(max_length=255)
+    venue = models.CharField(max_length=255)
 
 
     def __str__(self):

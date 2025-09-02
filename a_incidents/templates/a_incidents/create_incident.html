@@ -30,6 +30,28 @@
               <p class="text-red-600 text-sm mt-1">{{ form.description.errors }}</p>
             {% endif %}
           </div>
+
+          <!-- Venue field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.venue.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Venue
+            </label>
+            {{ form.venue }}
+            {% if form.venue.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.venue.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Offender Name field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.offender_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Offender Name
+            </label>
+            {{ form.offender_name }}
+            {% if form.offender_name.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.offender_name.errors }}</p>
+            {% endif %}
+          </div>
         </div>
   
         <button type="submit"
@@ -43,4 +65,4 @@
       </form>
     </div>
   </section>
-{% endblock %}
+{% endblock content %}
