@@ -1,0 +1,66 @@
+{% extends 'a_incidents/base.html' %}
+
+{% block content %}
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">System Logs</h1>
+        
+        <div class="relative overflow-x-auto">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">
+                            Timestamp
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            User
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Action
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Object
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Changes
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            {{ log.action_time|date:"Y-m-d H:i:s" }}
+                        </th>
+                        <td class="px-6 py-4">
+                            {{ log.user.username|default:"System" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if log.action_flag == 1 %}
+                                <span class="text-green-600">Added</span>
+                            {% elif log.action_flag == 2 %}
+                                <span class="text-blue-600">Changed</span>
+                            {% elif log.action_flag == 3 %}
+                                <span class="text-red-600">Deleted</span>
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {{ log.content_type.name|capfirst }}: {{ log.object_repr|truncatechars:50 }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {{ log.change_message|truncatechars:100 }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="bg-white dark:bg-gray-800">
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            No logs found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

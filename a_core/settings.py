@@ -31,15 +31,21 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'a_incidents',  # Custom app for incidents
+    # my apps
+    'a_incidents',  
     'a_venues',
     'a_auth',
+    'a_logs',
+    'a_reports',
+    # third party apps
+    'django_weasyprint',
     'django_cotton',
 ]
 
