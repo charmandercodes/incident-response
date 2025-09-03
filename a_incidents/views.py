@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
 from a_incidents.models import Incident
 from .forms import IncidentForm
-
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 # In your views.py
 from django.db.models import Q
+
 
 def home_page(request):
     incidents = Incident.objects.all().order_by('-created_at')
@@ -25,6 +26,7 @@ def home_page(request):
         'incidents': incidents
     })
 
+@login_required
 def create_incident(request):
     if request.method == 'POST':
         form = IncidentForm(request.POST)
@@ -42,6 +44,7 @@ def create_incident(request):
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import Incident
 
+@login_required
 def delete_incident(request, pk):
 
     incident = get_object_or_404(Incident, pk=pk)
@@ -50,10 +53,8 @@ def delete_incident(request, pk):
         incident.delete()
         return redirect('home')  # Go back to list after deleting
 
-    # Show confirmation page
-    return render(request, 'a_incidents/confirm_delete.html', {'incident': incident})
 
-
+@login_required
 def update_incident(request, pk):
 
     incident = get_object_or_404(Incident, pk=pk)

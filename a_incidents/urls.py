@@ -20,7 +20,7 @@ from a_incidents.views import home_page, create_incident, delete_incident, updat
 
 urlpatterns = [
     path('', home_page, name='home'),
-    path('new/', create_incident, name='create_incident'),
+    path('create-incident/', create_incident, name='create_incident'),
     path('<int:pk>/delete/', delete_incident, name='incident_delete'),
     path('<int:pk>/update/', update_incident, name='update_incident'),
 ]

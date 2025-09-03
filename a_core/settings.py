@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'a_incidents',  # Custom app for incidents
+    'a_venues',
+    'a_auth',
     'django_cotton',
 ]
 

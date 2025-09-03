@@ -1,0 +1,169 @@
+{% extends 'a_incidents/base.html' %}
+
+{% block content %}
+<section class="bg-white dark:bg-gray-900">
+    <div class="max-w-2xl px-4 py-8 mx-auto lg:py-16">
+      <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Update Venue</h2>
+      
+      <form method="post">
+        {% csrf_token %}
+  
+        <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
+          <!-- Name field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Name
+            </label>
+            {{ form.name }}
+            {% if form.name.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.name.errors }}</p>
+            {% endif %}
+          </div>
+  
+          <!-- Description field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.description.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Description
+            </label>
+            {{ form.description }}
+            {% if form.description.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.description.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Address field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.address.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Address
+            </label>
+            {{ form.address }}
+            {% if form.address.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.address.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- City field -->
+          <div class="sm:col-span-1">
+            <label for="{{ form.city.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              City
+            </label>
+            {{ form.city }}
+            {% if form.city.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.city.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- State field -->
+          <div class="sm:col-span-1">
+            <label for="{{ form.state.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              State
+            </label>
+            {{ form.state }}
+            {% if form.state.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.state.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Postal Code field -->
+          <div class="sm:col-span-1">
+            <label for="{{ form.postal_code.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Postal Code
+            </label>
+            {{ form.postal_code }}
+            {% if form.postal_code.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.postal_code.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Phone field -->
+          <div class="sm:col-span-1">
+            <label for="{{ form.phone.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Phone
+            </label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.phone.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Email field -->
+          <div class="sm:col-span-1">
+            <label for="{{ form.email.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Email
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.email.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Manager Name field -->
+          <div class="sm:col-span-1">
+            <label for="{{ form.manager_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Manager Name
+            </label>
+            {{ form.manager_name }}
+            {% if form.manager_name.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.manager_name.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Venue Type field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.venue_type.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Venue Type
+            </label>
+            {{ form.venue_type }}
+            {% if form.venue_type.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.venue_type.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Capacity field -->
+          <div class="sm:col-span-1">
+            <label for="{{ form.capacity.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Capacity
+            </label>
+            {{ form.capacity }}
+            {% if form.capacity.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.capacity.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Operating Hours field -->
+          <div class="sm:col-span-1">
+            <label for="{{ form.operating_hours.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Operating Hours
+            </label>
+            {{ form.operating_hours }}
+            {% if form.operating_hours.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.operating_hours.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Is Active field -->
+          <div class="sm:col-span-2">
+            <div class="flex items-center">
+              {{ form.is_active }}
+              <label for="{{ form.is_active.id_for_label }}" class="ml-2 text-sm font-medium text-gray-900 dark:text-white">
+                Active Venue
+              </label>
+            </div>
+            {% if form.is_active.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.is_active.errors }}</p>
+            {% endif %}
+          </div>
+        </div>
+     
+        <button type="submit"
+          class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-700">
+          Update Venue
+        </button>
+        <a href="{% url 'venue-home' %}" 
+           class="ml-2 inline-block text-sm text-gray-500 hover:underline dark:text-gray-400">
+          Cancel
+        </a>
+      </form>
+    </div>
+  </section>
+{% endblock content %}
