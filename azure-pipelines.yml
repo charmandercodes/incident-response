@@ -1,23 +1,19 @@
 # azure-pipelines.yml
-# Manual-only pipeline: no CI or PR auto-triggers.
 trigger: none
 pr: none
 
-# If you later want a nightly check, you could add a schedule block here.
-# schedules: []   # (leave empty for now)
-
-pool:
-  vmImage: ubuntu-latest
+# Agentless
+pool: server
 
 stages:
-- stage: ConnectivityCheck
-  displayName: "Connectivity Check"
+- stage: Connected
+  displayName: "Connection established"
   jobs:
-  - job: JustCheckout
-    displayName: "Confirm Azure Pipelines can reach GitHub"
+  - job: AgentlessNoOp
+    displayName: "No-op server job"
     steps:
-    - checkout: self
-    - script: |
-        echo "Repo checked out. Connection established."
-        echo "This pipeline is set to manual runs only."
-      displayName: "Echo"
+    # Agentless built-in task – does nothing, completes immediately
+    - task: Delay@1
+      inputs:
+        delayForMinutes: '0'
+      displayName: "No-op (agentless)"
