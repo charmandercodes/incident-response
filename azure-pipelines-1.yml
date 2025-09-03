@@ -1,0 +1,16 @@
+# azure-pipelines.yml
+# No triggers = pipeline never runs automatically
+trigger: none
+pr: none
+
+# Use the built-in "server" pool (doesn't request a hosted agent)
+pool: server
+
+stages:
+- stage: Connected
+  displayName: "Connection established"
+  jobs:
+  - job: MetadataOnly
+    steps:
+    - script: echo "✅ Azure DevOps is connected to this GitHub repo."
+      displayName: "Echo connection"
