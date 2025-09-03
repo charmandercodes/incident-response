@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'a_auth',
     'a_logs',
     'a_reports',
+    'a_offenders',
+    'a_analytics',
     # third party apps
     'django_weasyprint',
     'django_cotton',
@@ -130,3 +132,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # or your email provider
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'rehaan.rahman6@gmail.com'
+EMAIL_HOST_PASSWORD = 'abhp vrvf seja gbea'  # Use app password for Gmail
+DEFAULT_FROM_EMAIL = 'rehaan.rahman6@gmail.com'

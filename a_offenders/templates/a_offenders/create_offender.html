@@ -1,0 +1,208 @@
+{% extends 'a_incidents/base.html' %}
+
+{% block content %}
+<section class="bg-white dark:bg-gray-900">
+    <div class="max-w-4xl px-4 py-8 mx-auto lg:py-16">
+      <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Create Offender Record</h2>
+             
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+           
+        <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
+          
+          <!-- Basic Information Section -->
+          <div class="sm:col-span-2">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
+          </div>
+          
+          <!-- Name field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Full Name <span class="text-red-500">*</span>
+            </label>
+            {{ form.name }}
+            {% if form.name.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.name.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Contact Info field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.contact_info.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Contact Information
+            </label>
+            {{ form.contact_info }}
+            {% if form.contact_info.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.contact_info.errors }}</p>
+            {% endif %}
+            <p class="text-gray-500 text-xs mt-1">Phone, email, or other contact details</p>
+          </div>
+
+          <!-- Demographics Section -->
+          <div class="sm:col-span-2">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Demographics</h3>
+          </div>
+
+          <!-- Age field -->
+          <div>
+            <label for="{{ form.age.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Age
+            </label>
+            {{ form.age }}
+            {% if form.age.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.age.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Date of Birth field -->
+          <div>
+            <label for="{{ form.date_of_birth.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Date of Birth
+            </label>
+            {{ form.date_of_birth }}
+            {% if form.date_of_birth.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.date_of_birth.errors }}</p>
+            {% endif %}
+            <p class="text-gray-500 text-xs mt-1">Optional if age is provided</p>
+          </div>
+
+          <!-- Sex field -->
+          <div>
+            <label for="{{ form.sex.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Sex
+            </label>
+            {{ form.sex }}
+            {% if form.sex.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.sex.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Occupation field -->
+          <div>
+            <label for="{{ form.occupation.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Occupation
+            </label>
+            {{ form.occupation }}
+            {% if form.occupation.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.occupation.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Physical Description Section -->
+          <div class="sm:col-span-2">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Physical Description</h3>
+          </div>
+
+          <!-- Height field -->
+          <div>
+            <label for="{{ form.height.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Height
+            </label>
+            {{ form.height }}
+            {% if form.height.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.height.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Weight field -->
+          <div>
+            <label for="{{ form.weight.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Weight
+            </label>
+            {{ form.weight }}
+            {% if form.weight.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.weight.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Hair Color field -->
+          <div>
+            <label for="{{ form.hair_color.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Hair Color
+            </label>
+            {{ form.hair_color }}
+            {% if form.hair_color.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.hair_color.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Eye Color field -->
+          <div>
+            <label for="{{ form.eye_color.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Eye Color
+            </label>
+            {{ form.eye_color }}
+            {% if form.eye_color.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.eye_color.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Address field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.address.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Address
+            </label>
+            {{ form.address }}
+            {% if form.address.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.address.errors }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Photo field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.photo.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Photo
+            </label>
+            {{ form.photo }}
+            {% if form.photo.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.photo.errors }}</p>
+            {% endif %}
+            <p class="text-gray-500 text-xs mt-1">Upload a photo for identification purposes (JPG, PNG, GIF accepted, max 5MB)</p>
+          </div>
+
+          <!-- Additional Information Section -->
+          <div class="sm:col-span-2">
+            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Additional Information</h3>
+          </div>
+
+          <!-- Notes field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.notes.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Additional Notes
+            </label>
+            {{ form.notes }}
+            {% if form.notes.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.notes.errors }}</p>
+            {% endif %}
+            <p class="text-gray-500 text-xs mt-1">Any additional observations, distinguishing marks, behavioral notes, etc.</p>
+          </div>
+
+        </div>
+                
+        <div class="flex items-center space-x-4">
+          <button type="submit"
+            class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-700">
+            Create Offender Record
+          </button>
+          <a href="{% url 'offender-home' %}"
+              class="inline-block text-sm text-gray-500 hover:underline dark:text-gray-400">
+            Cancel
+          </a>
+        </div>
+
+        <!-- Form Help Text -->
+        <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <h4 class="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">Form Guidelines:</h4>
+          <ul class="text-xs text-blue-800 dark:text-blue-300 space-y-1">
+            <li>• Only the name field is required - all other fields are optional</li>
+            <li>• You can provide either age OR date of birth (or both for verification)</li>
+            <li>• Physical description helps with identification during incidents</li>
+            <li>• Photos should be clear headshots for identification purposes</li>
+            <li>• Use the notes field for any distinguishing marks or behavioral observations</li>
+          </ul>
+        </div>
+
+      </form>
+    </div>
+  </section>
+{% endblock content %}

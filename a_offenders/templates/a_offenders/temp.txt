@@ -1,0 +1,124 @@
+{% for offender in offenders %}
+<div class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 mb-6">
+    <!-- Dropdown Menu -->
+    <div class="flex justify-end px-4 pt-4">
+        <button id="dropdownButton-{{ offender.id }}" data-dropdown-toggle="dropdown-{{ offender.id }}" class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5" type="button">
+            <span class="sr-only">Open dropdown</span>
+            <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 3">
+                <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"/>
+            </svg>
+        </button>
+        <!-- Dropdown menu -->
+        <div id="dropdown-{{ offender.id }}" class="z-10 hidden text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
+            <ul class="py-2" aria-labelledby="dropdownButton-{{ offender.id }}">
+            <li>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">View Details</a>
+            </li>
+            <li>
+                <a href="{% url 'update-offender' offender.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Edit</a>
+            </li>
+            <li>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Generate Report</a>
+            </li>
+            <li>
+                <a href="#" onclick="return confirm('Are you sure you want to delete this offender record?');" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-400 dark:hover:text-white">Delete</a>
+            </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Card Content -->
+    <div class="flex flex-col items-center pb-10">
+        <!-- Offender Photo -->
+        {% if offender.photo %}
+            <img class="w-24 h-24 mb-3 rounded-full shadow-lg" src="{{ offender.photo.url }}" alt="{{ offender.name }}"/>
+        {% else %}
+            <div class="w-24 h-24 mb-3 bg-gray-300 rounded-full shadow-lg flex items-center justify-center dark:bg-gray-600">
+                <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+            </div>
+        {% endif %}
+        
+        <!-- Offender Name -->
+        <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">{{ offender.name }}</h5>
+        
+        <!-- Occupation -->
+        {% if offender.occupation %}
+        <span class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ offender.occupation }}</span>
+        {% endif %}
+        
+        <!-- Status Badges -->
+        <div class="flex flex-wrap gap-2 mb-4 justify-center">
+            {% if offender.is_currently_banned %}
+            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                Currently Banned
+            </span>
+            {% else %}
+            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                Not Banned
+            </span>
+            {% endif %}
+            
+            {% if offender.total_warnings > 0 %}
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+                {{ offender.total_warnings }} Warning{{ offender.total_warnings|pluralize }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <!-- Quick Details -->
+        <div class="text-center text-sm text-gray-600 dark:text-gray-400 mb-4 space-y-1">
+            {% if offender.age %}
+            <p><strong>Age:</strong> {{ offender.age }}</p>
+            {% endif %}
+            
+            {% if offender.sex %}
+            <p><strong>Sex:</strong> {{ offender.get_sex_display }}</p>
+            {% endif %}
+            
+            {% if offender.height or offender.weight %}
+            <p>
+                <strong>Physical:</strong>
+                {% if offender.height %}{{ offender.height }}{% endif %}
+                {% if offender.height and offender.weight %}, {% endif %}
+                {% if offender.weight %}{{ offender.weight }}{% endif %}
+            </p>
+            {% endif %}
+        </div>
+        
+        <!-- Action Buttons -->
+
+        <div class="mt-6 flex items-center justify-start">
+            <div class="mr-2">
+                <a href="#" 
+                class="w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700 sm:w-auto">
+                    View Details
+                </a>
+            </div>
+            <div class="mr-2">
+                <a href="{% url 'update-offender' offender.id %}" 
+                class="w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700 sm:w-auto">
+                    Update
+                </a>
+            </div>
+            <div class="mr-2">
+                <form action="{% url 'delete-offender' offender.id %}" method="post" style="display:inline;" class="w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-red-500 dark:text-white dark:hover:bg-red-700 dark:hover:text-white dark:focus:ring-gray-700 sm:w-auto">
+                    {% csrf_token %}
+                    <button type="submit" onclick="return confirm('Are you sure you want to delete this offender record?');">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Created/Updated Info -->
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+            Added {{ offender.created_at|date:"M d, Y" }}
+            {% if offender.updated_at != offender.created_at %}
+                <br>Updated {{ offender.updated_at|date:"M d, Y" }}
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endfor %}

@@ -1,0 +1,59 @@
+<!-- dashboard.html -->
+{% extends 'a_incidents/base.html' %}
+
+{% block content %}
+<section class="bg-white dark:bg-gray-900">
+    <div class="max-w-4xl px-4 py-8 mx-auto lg:py-16">
+        <h2 class="mb-8 text-3xl font-bold text-gray-900 dark:text-white">Incidents Over Time</h2>
+        
+        <!-- Chart Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <div class="relative h-96">
+                <canvas id="incidentChart"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('incidentChart').getContext('2d');
+    const incidentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_months|safe }},
+            datasets: [{
+                label: 'Number of Incidents',
+                data: {{ chart_counts|safe }},
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Incidents Reported Since 2025',
+                    font: {
+                        size: 16
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock content %}

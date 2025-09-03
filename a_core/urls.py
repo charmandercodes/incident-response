@@ -24,4 +24,7 @@ urlpatterns = [
     path('auth/', include('a_auth.urls')),
     path('logs/', include('a_logs.urls')),
     path('reports/', include('a_reports.urls')),
+    path('offenders/', include('a_offenders.urls')),
+    path('notifications/', include('a_notifications.urls')),
+    path('analytics/', include('a_analytics.urls')),
 ]

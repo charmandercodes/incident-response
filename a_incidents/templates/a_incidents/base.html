@@ -31,23 +31,37 @@
             <div class="hidden md:flex md:flex-1 md:justify-center">
                 <ul class="flex font-medium">
                     <li>
-                        <a href="{% url 'home'%}" class="block py-2 px-3 text-blue-700 dark:text-blue-500" aria-current="page">Incidents</a>
+                        <a href="{% url 'home' %}" 
+                           class="block py-2 px-3 {% if request.resolver_match.url_name == 'home' %}text-blue-700 dark:text-blue-500{% else %}text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500{% endif %}">
+                            Incidents
+                        </a>
                     </li>
                     <li>
-                        <a href="{% url 'venue-home' %}" class="block py-2 px-3 text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500">Venues</a>
+                        <a href="{% url 'venue-home' %}" 
+                           class="block py-2 px-3 {% if request.resolver_match.url_name == 'venue-home' %}text-blue-700 dark:text-blue-500{% else %}text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500{% endif %}">
+                            Venues
+                        </a>
                     </li>
                     <li>
-                        <a href="#" class="block py-2 px-3 text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500">Offenders</a>
-                    </li>
-                    <li>
-                        <a href="#" class="block py-2 px-3 text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500">Warning</a>
-                    </li>
-                    <li>
-                        <a href="#" class="block py-2 px-3 text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500">Bans</a>
+                        <a href="{% url 'offender-home' %}" 
+                           class="block py-2 px-3 {% if request.resolver_match.url_name == 'offender-home' %}text-blue-700 dark:text-blue-500{% else %}text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500{% endif %}">
+                            Offenders
+                        </a>
                     </li>
                     {% if user.is_staff %}
                     <li>
-                        <a href="{% url 'logs' %}" class="block py-2 px-3 text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500">Logs</a>
+                        <a href="{% url 'analytics' %}" 
+                           class="block py-2 px-3 {% if request.resolver_match.url_name == 'analytics' %}text-blue-700 dark:text-blue-500{% else %}text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500{% endif %}">
+                            Analytics
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if user.is_staff %}
+                    <li>
+                        <a href="{% url 'logs' %}" 
+                           class="block py-2 px-3 {% if request.resolver_match.url_name == 'logs' %}text-blue-700 dark:text-blue-500{% else %}text-gray-900 hover:text-blue-700 dark:text-white dark:hover:text-blue-500{% endif %}">
+                            Logs
+                        </a>
                     </li>
                     {% endif %}
                 </ul>
