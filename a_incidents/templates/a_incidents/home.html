@@ -10,47 +10,57 @@
     
     </div>
     <div class="mt-4">
-        <div class="flex">
-            <a href="{% url 'create_incident' %}">
-                <button class="mr-4 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-700">
-                    Create Incident
-                </button>
-            </a>
-     
-            <form class="w-full gap-4 sm:flex sm:items-center justify-start lg:mt-0">
+        <div class="flex items-center gap-4">
+          <!-- Button -->
+          <a href="{% url 'create_incident' %}">
+            <button class="h-[42px] text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-700">
+              Create Incident
+            </button>
+          </a>
+      
+          <form class="flex-1">
             <label for="simple-search" class="sr-only">Search</label>
-            <div class="relative w-full flex-1 lg:max-w-sm">
-                <div class="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3">
-                <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3">
+                <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
                 </svg>
-                </div>
-                <input type="text" id="simple-search" class="block w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 ps-9 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500" placeholder="Search Incidents" required />
+              </div>
+              <input 
+                type="text" 
+                name="search" 
+                id="simple-search" 
+                class="h-[42px] w-full rounded-lg border border-gray-300 bg-gray-50 ps-9 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500" 
+                placeholder="Search Incidents"
+                hx-get="{% url 'home' %}"
+                hx-target="#incident-list"
+                hx-trigger="keyup delay:300ms"
+              />
             </div>
-            </form>
+          </form>
         </div>
+    </div>  
 
-    </div>
-
+    <div id="incident-list">
     {% for incident in incidents %}
-    <div class="mt-6 flow-root">
-        <div class="-my-6 divide-y divide-gray-200 dark:divide-gray-800">
-        <div class="space-y-4 py-6 md:py-8">
-            <div class="grid gap-4">
+        <div class="mt-6 flow-root">
+            <div class="-my-6 divide-y divide-gray-200 dark:divide-gray-800">
+            <div class="space-y-4 py-6 md:py-8">
+                <div class="grid gap-4">
 
-            <a href="#" class="text-xl font-semibold text-gray-900 hover:underline dark:text-white">{{ incident.title }}</a>
+                <a href="#" class="text-xl font-semibold text-gray-900 hover:underline dark:text-white">{{ incident.title }}</a>
+                </div>
+                <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ incident.description }}</p>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Logded on the {{ incident.created_at }} by
+                <a href="#" class="text-gray-900 hover:underline dark:text-white">{{request.user}}</a>
+                </p>
             </div>
-            <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ incident.description }}</p>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-            Logded on the {{ incident.created_at }} by
-            <a href="#" class="text-gray-900 hover:underline dark:text-white">{{request.user}}</a>
-            </p>
+            </div>
         </div>
-        </div>
-    </div>
     
 
-    <div class="mt-6 flex items-center justify-center lg:justify-start">
+    <div class="mt-6 flex items-center justify-start">
         <div class="mr-2">
             <a href="{% url 'update_incident' incident.id %}" 
             class="w-full rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700 sm:w-auto">
@@ -69,6 +79,7 @@
 
     </div>
     {% endfor %}
+</div>
 </div>
 </section>
 

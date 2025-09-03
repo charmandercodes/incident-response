@@ -52,7 +52,28 @@
               <p class="text-red-600 text-sm mt-1">{{ form.offender_name.errors }}</p>
             {% endif %}
           </div>
+          <div class="sm:col-span-2">
+            <label for="{{ form.warning.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Warning Status
+            </label>
+            {{ form.warning }}
+            {% if form.warning.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ form.warning.errors }}</p>
+            {% endif %}
+          </div>
+        
+          <!-- Ban Select -->
+          <div class="sm:col-span-2">
+              <label for="{{ form.ban.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                  Ban Status
+              </label>
+              {{ form.ban }}
+              {% if form.ban.errors %}
+                  <p class="text-red-600 text-sm mt-1">{{ form.ban.errors }}</p>
+              {% endif %}
+          </div>
         </div>
+     
   
         <button type="submit"
           class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-700">

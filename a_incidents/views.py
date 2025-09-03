@@ -4,15 +4,26 @@ from .forms import IncidentForm
 
 # Create your views here.
 
+# In your views.py
+from django.db.models import Q
+
 def home_page(request):
-
-
-    incidents = Incident.objects.all()
-
+    incidents = Incident.objects.all().order_by('-created_at')
+    
+    # Handle search
+    search_query = request.GET.get('search', '')
+    if search_query:
+        incidents = incidents.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(venue__icontains=search_query) |
+            Q(offender_name__icontains=search_query)
+        )
+    
+    # Regular request, return full page
     return render(request, 'a_incidents/home.html', {
         'incidents': incidents
     })
-
 
 def create_incident(request):
     if request.method == 'POST':
