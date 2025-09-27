@@ -1,10 +1,8 @@
-
 {% extends 'a_incidents/base.html' %}
-
 {% block content %}
 <section class="bg-white dark:bg-gray-900">
     <div class="max-w-4xl px-4 py-8 mx-auto lg:py-16">
-      <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Create Offender Record</h2>
+      <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Update Offender Record</h2>
              
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -23,7 +21,6 @@
               <p class="text-red-600 text-sm mt-1">{{ form.name.errors }}</p>
             {% endif %}
           </div>
-
           <!-- Contact Info field -->
           <div class="sm:col-span-2">
             <label for="{{ form.contact_info.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -35,30 +32,18 @@
             {% endif %}
             <p class="text-gray-500 text-xs mt-1">Phone, email, or other contact details</p>
           </div>
-
         </div>
                 
         <div class="flex items-center space-x-4">
           <button type="submit"
-            class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-700">
-            Create Offender Record
+            class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700">
+            Update Offender Record
           </button>
           <a href="{% url 'offender-home' %}"
               class="inline-block text-sm text-gray-500 hover:underline dark:text-gray-400">
             Cancel
           </a>
         </div>
-
-        <!-- Form Help Text -->
-        <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <h4 class="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">Release 1 - Basic Information:</h4>
-          <ul class="text-xs text-blue-800 dark:text-blue-300 space-y-1">
-            <li>• Only the name field is required - contact information is optional</li>
-            <li>• Additional fields and photo upload coming in future releases</li>
-            <li>• This creates a basic offender record that can be expanded later</li>
-          </ul>
-        </div>
-
       </form>
     </div>
   </section>

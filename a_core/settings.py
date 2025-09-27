@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'a_offenders',
     'a_analytics',
     # third party apps
-    'django_weasyprint',
     'django_cotton',
 ]
 
