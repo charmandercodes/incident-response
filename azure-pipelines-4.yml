@@ -3,8 +3,17 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
+# Run on all branches when code is pushed
 trigger:
-- main
+  branches:
+    include:
+      - main
+
+# Run only when a PR targets main
+pr:
+  branches:
+    include:
+      - main
 
 pool:
   name: 'Self Hosted Rehaan'
