@@ -1,26 +1,44 @@
 from django.db import models
+from a_venues.models import Venue
+from a_offenders.models import Offender
 
 class Incident(models.Model):
-    # Incident related fields
     title = models.CharField(max_length=255)
     description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     
-    # Foreign Key to Offender model
+    INCIDENT_TYPE_CHOICES = [
+        ('theft', 'Theft'),
+        ('assault', 'Assault'),
+        ('vandalism', 'Vandalism'),
+        ('other', 'Other'),
+    ]
+    incident_type = models.CharField(
+        max_length=50,
+        choices=INCIDENT_TYPE_CHOICES,
+        default='other'
+    )
+
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    
+    # Keep existing ForeignKey (someone else's part)
     offender = models.ForeignKey(
-        'a_offenders.Offender',  # Adjust app name if different
+        Offender,
         on_delete=models.CASCADE,
-        related_name='incidents',
-        null=True,  # Temporarily allow null for migration
+        related_name='primary_incidents',  # <-- change related_name to avoid clash
+        null=True,
+        blank=True
+    )
+
+    # Your ManyToManyField for multiple offenders
+    offenders = models.ManyToManyField(
+        Offender,
+        related_name='incidents',  # <-- make sure this is different from above
         blank=True
     )
     
-    # Keep old field temporarily for data migration
-    offender_name = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
-    venue = models.CharField(max_length=255)
-
     WARNING_CHOICES = [
         ('no', 'No'),
         ('yes', 'Yes'),
@@ -34,4 +52,4 @@ class Incident(models.Model):
     ban = models.CharField(max_length=20, choices=BAN_CHOICES, default='no')
     
     def __str__(self):
-        return f"Incident: {self.title}"
+        return f"Incident: {self.title} at {self.venue}"
