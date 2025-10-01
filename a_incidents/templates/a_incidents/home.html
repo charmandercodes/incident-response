@@ -1,115 +1,117 @@
 {% extends "a_incidents/base.html" %}
 {% block content %}
 
-<h2 class="text-2xl font-semibold mb-4">All Incidents</h2>
-
-{% if request.user.is_authenticated %}
-  <!-- Controls: search, multi-venue filter, severity sort -->
-  <form method="get" class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-3 mb-4">
-    <div>
-      <label class="block text-sm font-medium mb-1">Search</label>
-      <input type="text" name="search" value="{{ search|default:'' }}"
-             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5
-                    dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-             placeholder="title / description / venue / offender"/>
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium mb-1">Filter by venue (multi)</label>
-      <select name="venue" multiple
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5
-                     dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-28">
-        {% for v in venues %}
-          <option value="{{ v }}" {% if v in sel_venues %}selected{% endif %}>{{ v }}</option>
-        {% endfor %}
-      </select>
-      <p class="text-xs text-gray-500 mt-1">Hold Cmd/Ctrl to select multiple venues.</p>
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium mb-1">Sort</label>
-      <select name="sort"
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5
-                     dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-        <option value="">Newest first</option>
-        <option value="severity_asc" {% if sort == "severity_asc" %}selected{% endif %}>Severity ↑</option>
-        <option value="severity_desc" {% if sort == "severity_desc" %}selected{% endif %}>Severity ↓</option>
-      </select>
-    </div>
-
-    <div class="flex gap-2">
-      <button type="submit"
-              class="mt-6 text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300
-                     font-medium rounded-lg text-sm px-4 py-2.5">
-        Apply
-      </button>
-      <a href="." class="mt-6 text-sm px-4 py-2.5 border rounded-lg">Reset</a>
-    </div>
-  </form>
-
-  <!-- Combined PDF selection form: submits selected IDs to reports endpoint (GET) -->
-  <form method="get" action="{% url 'combined_incident_report' %}" class="mb-3">
-    <div class="flex items-center gap-2">
-      <button type="submit"
-              class="text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:outline-none focus:ring-purple-300
-                     font-medium rounded-lg text-sm px-4 py-2.5">
-        Generate Combined PDF
-      </button>
-      <span class="text-sm text-gray-500">Select incidents below then click the button.</span>
-    </div>
-
-    <!-- Incidents list -->
-    <div class="mt-4 space-y-4">
-      {% for incident in incidents %}
-        <div class="border rounded-lg p-4 bg-white dark:bg-gray-800">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-lg font-semibold">
-                #{{ incident.id }} — {{ incident.title }}
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                {% if incident.venue %}<strong>Venue:</strong> {{ incident.venue }} · {% endif %}
-                <strong>Severity:</strong>
-                {% if incident.severity %}{{ incident.get_severity_display }}{% else %}-{% endif %}
-                · Logged {{ incident.created_at }}
-              </p>
-              {% if incident.description %}
-                <p class="mt-2 text-gray-800 dark:text-gray-100">{{ incident.description }}</p>
-              {% endif %}
-              <div class="mt-2 flex flex-wrap gap-2">
-                <a href="{% url 'update_incident' incident.id %}"
-                   class="text-sm px-3 py-1.5 rounded border">Update</a>
-                <a href="{% url 'enhanced_incident_report' incident.id %}"
-                   class="text-sm px-3 py-1.5 rounded border">Single Incident PDF</a>
-              </div>
-            </div>
-            <div class="flex flex-col items-end gap-2">
-              <!-- checkbox feeds GET ids to /reports/combined/?id=... -->
-              <label class="inline-flex items-center gap-2">
-                <input type="checkbox" name="id" value="{{ incident.id }}" class="w-4 h-4">
-                <span class="text-sm">Include</span>
-              </label>
-              <form method="post" action="{% url 'incident_delete' incident.id %}">
-                {% csrf_token %}
-                <button type="submit" class="text-sm px-3 py-1.5 rounded border">Delete</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      {% empty %}
-        <p>No incidents found.</p>
-      {% endfor %}
-    </div>
-  </form>
-
-  <div class="mt-6">
-    <a href="{% url 'create_incident' %}"
-       class="inline-block text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300
-              font-medium rounded-lg text-sm px-4 py-2.5">Create Incident</a>
+<div class="max-w-5xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-3xl font-semibold text-gray-100">Incidents</h1>
+    <p class="text-sm text-gray-400 mt-1">Search, filter by venue, sort by severity, and export reports.</p>
   </div>
 
-{% else %}
-  <p>Please login with staff credentials to access incidents</p>
-{% endif %}
+  {% if request.user.is_authenticated %}
+    <!-- Controls -->
+    <form method="get" class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-300 mb-1">Search</label>
+        <input type="text" name="search" value="{{ search|default:'' }}"
+               class="w-full bg-gray-800 border border-gray-700 text-gray-100 text-sm rounded-lg p-2.5"
+               placeholder="title / description / venue / offender"/>
+      </div>
+
+      <div class="md:col-span-1">
+        <label class="block text-sm font-medium text-gray-300 mb-1">Filter by venue (multi)</label>
+        <select name="venue" multiple
+                class="w-full bg-gray-800 border border-gray-700 text-gray-100 text-sm rounded-lg p-2.5 min-h-28">
+          {% for v in venues %}
+            <option value="{{ v }}" {% if v in sel_venues %}selected{% endif %}>{{ v }}</option>
+          {% endfor %}
+        </select>
+        <p class="text-[11px] text-gray-500 mt-1">Hold Cmd/Ctrl to select multiple venues.</p>
+      </div>
+
+      <div class="md:col-span-1">
+        <label class="block text-sm font-medium text-gray-300 mb-1">Sort</label>
+        <select name="sort"
+                class="w-full bg-gray-800 border border-gray-700 text-gray-100 text-sm rounded-lg p-2.5">
+          <option value="">Newest first</option>
+          <option value="severity_asc" {% if sort == "severity_asc" %}selected{% endif %}>Severity ↑</option>
+          <option value="severity_desc" {% if sort == "severity_desc" %}selected{% endif %}>Severity ↓</option>
+        </select>
+      </div>
+
+      <div class="md:col-span-4 flex gap-3">
+        <button type="submit"
+                class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300
+                       font-medium rounded-lg text-sm px-4 py-2.5">
+          Apply
+        </button>
+        <a href="." class="text-sm px-4 py-2.5 border border-gray-700 text-gray-200 rounded-lg">Reset</a>
+      </div>
+    </form>
+
+    <!-- Combined PDF selection -->
+    <form method="get" action="{% url 'combined_incident_report' %}" class="mb-4">
+      <div class="flex items-center gap-3">
+        <button type="submit"
+                class="text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:outline-none focus:ring-purple-300
+                       font-medium rounded-lg text-sm px-4 py-2.5">
+          Generate Combined PDF
+        </button>
+        <span class="text-sm text-gray-400">Tick incidents below, then click the button.</span>
+      </div>
+
+      <!-- List -->
+      <div class="mt-4 space-y-4">
+        {% for incident in incidents %}
+          <div class="border border-gray-800 rounded-lg p-4 bg-gray-900/60">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-100">
+                  #{{ incident.id }} — {{ incident.title }}
+                </h2>
+                <p class="text-sm text-gray-400 mt-1">
+                  {% if incident.venue %}<span class="font-medium text-gray-300">Venue:</span> {{ incident.venue }} · {% endif %}
+                  <span class="font-medium text-gray-300">Severity:</span>
+                  {% if incident.severity %}{{ incident.get_severity_display }}{% else %}-{% endif %}
+                  · Logged {{ incident.created_at }}
+                </p>
+                {% if incident.description %}
+                  <p class="mt-3 text-gray-200">{{ incident.description }}</p>
+                {% endif %}
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <a href="{% url 'update_incident' incident.id %}"
+                     class="text-sm px-3 py-1.5 rounded border border-gray-700 text-gray-200 hover:bg-gray-800">Update</a>
+                  <a href="{% url 'enhanced_incident_report' incident.id %}"
+                     class="text-sm px-3 py-1.5 rounded border border-gray-700 text-gray-200 hover:bg-gray-800">Single Incident PDF</a>
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <label class="inline-flex items-center gap-2 text-gray-300">
+                  <input type="checkbox" name="id" value="{{ incident.id }}" class="w-4 h-4">
+                  <span class="text-sm">Include</span>
+                </label>
+                <form method="post" action="{% url 'incident_delete' incident.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="text-sm px-3 py-1.5 rounded border border-gray-700 text-gray-200 hover:bg-gray-800">
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-gray-300">No incidents found.</p>
+        {% endfor %}
+      </div>
+    </form>
+
+    <div class="mt-8">
+      <a href="{% url 'create_incident' %}"
+         class="inline-block text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300
+                font-medium rounded-lg text-sm px-4 py-2.5">Create Incident</a>
+    </div>
+  {% else %}
+    <p class="text-gray-300">Please login with staff credentials to access incidents</p>
+  {% endif %}
+</div>
 
 {% endblock content %}
