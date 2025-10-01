@@ -1,10 +1,26 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Offender
+from .models import Offender, SEVERITY
 import datetime
 
 
 class OffenderForm(forms.ModelForm):
+    # --- Optional quick actions (NOT model fields) ---
+    warning_now = forms.BooleanField(required=False, label="Create a Warning now?")
+    warning_severity = forms.ChoiceField(required=False, choices=SEVERITY, label="Warning Severity")
+    ban_now = forms.BooleanField(required=False, label="Create a Ban now?")
+    ban_duration = forms.ChoiceField(
+        required=False,
+        choices=[
+            ("", "N/A"),
+            ("1", "1 day"), ("3", "3 days"), ("7", "1 week"),
+            ("14", "2 weeks"), ("30", "1 month"), ("90", "3 months"),
+            ("365", "1 year"), ("permanent", "Permanent"),
+        ],
+        label="Ban Duration",
+    )
+    ban_reason = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}), label="Ban Reason")
+    
     class Meta:
         model = Offender
         fields = [
@@ -146,9 +162,15 @@ class OffenderForm(forms.ModelForm):
         self.fields['sex'].choices = sex_choices
 
     def clean(self):
-        cleaned_data = super().clean()
-        age = cleaned_data.get('age')
-        date_of_birth = cleaned_data.get('date_of_birth')
+        cleaned = super().clean()
+        age = cleaned.get('age')
+        dob = cleaned.get('date_of_birth')
+        if age and dob:
+            today = datetime.date.today()
+            calc = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            if abs(calc - age) > 1:
+                raise ValidationError(f"Age ({age}) and date of birth ({dob}) don't match (≈{calc}).")
+        return cleaned
         
         # Validate that at least one of age or date_of_birth is provided
         if not age and not date_of_birth:

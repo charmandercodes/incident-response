@@ -1,7 +1,18 @@
-from django.db import models
-from django.utils import timezone
 from django.conf import settings
+from django.db import models
+from django.db.models import BooleanField, Case, Value, When
+from django.utils import timezone
+from django.db.models import Q
+
 # Create your models here.
+
+
+SEVERITY = (
+    ("L", "Low"),
+    ("M", "Medium"),
+    ("H", "High"),
+    ("C", "Critical"),
+)
 
 class Offender(models.Model):
     # Basic Info
@@ -14,16 +25,13 @@ class Offender(models.Model):
     # Demographics
     age = models.PositiveIntegerField(null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)  # Alternative to age
-    sex = models.CharField(
-        max_length=10, 
-        choices=[
-            ('M', 'Male'),
-            ('F', 'Female'),
-            ('O', 'Other'),
-            ('U', 'Unknown')
-        ],
-        blank=True
-    )
+    SEX_CHOICES = (
+    ('M', 'Male'),
+    ('F', 'Female'),
+    ('O', 'Other'),
+    ('U', 'Unknown'),
+)
+    sex = models.CharField(max_length=10, choices=SEX_CHOICES, blank=True)
     
     # Physical Description
     height = models.CharField(max_length=20, blank=True)  # e.g., "5'10"" or "178cm"
@@ -47,47 +55,43 @@ class Offender(models.Model):
     
     @property
     def active_bans(self):
-        ids = list(self.bans.values_list('id', flat=True))
-        self.bans.filter(id__in=ids).update(
-            is_active=dj_models.Case(
-                dj_models.When(end_date__lt=timezone.localdate(), then=dj_models.Value(False)),
-                default=dj_models.Value(True),
-                output_field=dj_models.BooleanField(),
-            )
-        )
+        today = timezone.localdate()
+        return self.bans.filter(
+         Q(end_date__isnull=True) | Q(end_date__gte=today),
+            start_date__lte=today,
+            is_active=True,
+    )
         return self.bans.filter(is_active=True)
 
     @property
     def is_currently_banned(self):
         return self.active_bans.exists()
-    
 
-    class IncidentOffender(models.Model):
+
+class IncidentOffender(models.Model):
     offender = models.ForeignKey(
         'a_offenders.Offender',
-        on_delete=modsels.CASCADE,
-        related_name='incident_links'
+        on_delete=models.CASCADE,
+        related_name='incident_links',
     )
     incident = models.ForeignKey(
         'a_incidents.Incident',
         on_delete=models.CASCADE,
-        related_name='offender_links'
+        related_name='offender_links',
     )
     role = models.CharField(max_length=50, blank=True)
     linked_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('offender', 'incident')
+        constraints = [
+            models.UniqueConstraint(
+                fields=("offender", "incident"),
+                name="uq_incidentoffender_offender_incident",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.offender} ↔ Incident {self.incident_id}"
-    
-    SEVERITY = (
-    ("L", "Low"),
-    ("M", "Medium"),
-    ("H", "High"),
-    ("C", "Critical"),
-)
 
 class Warning(models.Model):
     offender = models.ForeignKey('a_offenders.Offender', on_delete=models.CASCADE, related_name='warnings')
@@ -126,3 +130,7 @@ class Ban(models.Model):
         self.is_active = self.start_date <= today and (self.end_date is None or self.end_date >= today)
         return self.is_active
     
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.end_date and self.end_date < self.start_date:
+            raise ValidationError("End date cannot be before start date.")

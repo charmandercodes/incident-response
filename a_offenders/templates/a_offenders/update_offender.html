@@ -1,50 +1,127 @@
 {% extends 'a_incidents/base.html' %}
+
 {% block content %}
 <section class="bg-white dark:bg-gray-900">
-    <div class="max-w-4xl px-4 py-8 mx-auto lg:py-16">
-      <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Update Offender Record</h2>
-             
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-           
-        <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
-          
-          <!-- Basic Information Section -->
-          
-          <!-- Name field -->
+  <div class="max-w-4xl px-4 py-8 mx-auto lg:py-16">
+    <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Update Offender Record</h2>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div class="grid gap-4 mb-6 sm:grid-cols-2 sm:gap-6">
+        <!-- Name -->
+        <div class="sm:col-span-2">
+          <label for="{{ form.name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Full Name <span class="text-red-500">*</span>
+          </label>
+          {{ form.name }}
+          {% if form.name.errors %}<p class="text-red-600 text-sm mt-1">{{ form.name.errors }}</p>{% endif %}
+        </div>
+
+        <!-- Contact -->
+        <div class="sm:col-span-2">
+          <label for="{{ form.contact_info.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Contact Information
+          </label>
+          {{ form.contact_info }}
+          {% if form.contact_info.errors %}<p class="text-red-600 text-sm mt-1">{{ form.contact_info.errors }}</p>{% endif %}
+          <p class="text-gray-500 text-xs mt-1">Phone, email, or other contact details</p>
+        </div>
+
+        <!-- Current photo (if any) -->
+        {% if offender.photo %}
           <div class="sm:col-span-2">
-            <label for="{{ form.name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Full Name <span class="text-red-500">*</span>
-            </label>
-            {{ form.name }}
-            {% if form.name.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.name.errors }}</p>
-            {% endif %}
+            <span class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Current Photo</span>
+            <img src="{{ offender.photo.url }}" alt="{{ offender.name }}"
+                 class="w-32 h-32 rounded object-cover border">
           </div>
-          <!-- Contact Info field -->
-          <div class="sm:col-span-2">
-            <label for="{{ form.contact_info.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Contact Information
-            </label>
-            {{ form.contact_info }}
-            {% if form.contact_info.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.contact_info.errors }}</p>
-            {% endif %}
-            <p class="text-gray-500 text-xs mt-1">Phone, email, or other contact details</p>
+        {% endif %}
+
+        <!-- Upload new photo -->
+        <div class="sm:col-span-2">
+          <label for="{{ form.photo.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            Replace Photo
+          </label>
+          {{ form.photo }}
+          {% if form.photo.errors %}<p class="text-red-600 text-sm mt-1">{{ form.photo.errors }}</p>{% endif %}
+          <div class="mt-3">
+            <img id="photo-preview" class="hidden w-32 h-32 rounded object-cover border" alt="Preview">
           </div>
         </div>
-                
-        <div class="flex items-center space-x-4">
-          <button type="submit"
-            class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-700">
-            Update Offender Record
-          </button>
-          <a href="{% url 'offender-home' %}"
-              class="inline-block text-sm text-gray-500 hover:underline dark:text-gray-400">
-            Cancel
-          </a>
+
+        <!-- Optional fields -->
+        <div>
+          <label for="{{ form.age.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Age</label>
+          {{ form.age }}
         </div>
-      </form>
-    </div>
-  </section>
+        <div>
+          <label for="{{ form.date_of_birth.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date of Birth</label>
+          {{ form.date_of_birth }}
+        </div>
+        <div>
+          <label for="{{ form.sex.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sex</label>
+          {{ form.sex }}
+        </div>
+        <div>
+          <label for="{{ form.height.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Height</label>
+          {{ form.height }}
+        </div>
+        <div>
+          <label for="{{ form.weight.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Weight</label>
+          {{ form.weight }}
+        </div>
+        <div>
+          <label for="{{ form.hair_color.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Hair Color</label>
+          {{ form.hair_color }}
+        </div>
+        <div>
+          <label for="{{ form.eye_color.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Eye Color</label>
+          {{ form.eye_color }}
+        </div>
+        <div class="sm:col-span-2">
+          <label for="{{ form.occupation.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Occupation</label>
+          {{ form.occupation }}
+        </div>
+        <div class="sm:col-span-2">
+          <label for="{{ form.address.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address</label>
+          {{ form.address }}
+        </div>
+        <div class="sm:col-span-2">
+          <label for="{{ form.notes.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Notes</label>
+          {{ form.notes }}
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <button type="submit"
+                class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">
+          Update Offender Record
+        </button>
+        <a href="{% url 'offender-home' %}" class="inline-block text-sm text-gray-500 hover:underline dark:text-gray-400">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+  // Preview a newly selected image (before saving)
+  (function () {
+    const input = document.getElementById("{{ form.photo.id_for_label }}");
+    const img = document.getElementById("photo-preview");
+    if (!input) return;
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0];
+      if (file) {
+        img.src = URL.createObjectURL(file);
+        img.classList.remove("hidden");
+      } else {
+        img.src = "";
+        img.classList.add("hidden");
+      }
+    });
+  })();
+</script>
 {% endblock content %}
