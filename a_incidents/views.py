@@ -15,7 +15,7 @@ def _apply_filters_and_sorting(request, qs: QuerySet) -> QuerySet:
       - filter by venue(s): ?venue=A&venue=B
       - sort by severity: ?sort=severity_asc|severity_desc
     """
-    # Search (kept from your original code)
+   
     search_query = request.GET.get("search", "").strip()
     if search_query:
         qs = qs.filter(
@@ -25,7 +25,7 @@ def _apply_filters_and_sorting(request, qs: QuerySet) -> QuerySet:
             | Q(offender_name__icontains=search_query)
         )
 
-    # Filter by one or more venue strings (multi-select)
+    
     venue_params = [v.strip() for v in request.GET.getlist("venue") if v.strip()]
     if venue_params:
         qs = qs.filter(venue__in=venue_params)
@@ -43,11 +43,11 @@ def _apply_filters_and_sorting(request, qs: QuerySet) -> QuerySet:
 
 
 def home_page(request):
-    # Base queryset
+    
     incidents = Incident.objects.all()
     incidents = _apply_filters_and_sorting(request, incidents)
 
-    # Compute unique venue list for the filter box
+    
     venues = (
         Incident.objects.exclude(venue__isnull=True)
         .exclude(venue__exact="")
@@ -56,12 +56,20 @@ def home_page(request):
         .order_by("venue")
     )
 
+    
+    sel_venues = request.GET.getlist("venue")
+    search = request.GET.get("search", "")
+    sort = request.GET.get("sort", "")
+
     return render(
         request,
         "a_incidents/home.html",
         {
             "incidents": incidents,
             "venues": venues,
+            "sel_venues": sel_venues,
+            "search": search,
+            "sort": sort,
         },
     )
 
@@ -80,8 +88,8 @@ def create_incident(request):
 
 
 def send_incident_notification(incident, created_by):
-    # For testing — uses your settings.DEFAULT_FROM_EMAIL
-    staff_emails = ["rehaan.rahman6@gmail.com"]  # replace with your list if needed
+    
+    staff_emails = ["rehaan.rahman6@gmail.com"]  
     if not staff_emails:
         return
     subject = f"New Incident Reported: {incident.title}"
@@ -108,7 +116,7 @@ Please log in to the system to review the full details.
             fail_silently=True,
         )
     except Exception:
-        # Keep silent for local dev as your original code did
+        
         pass
 
 
