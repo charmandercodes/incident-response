@@ -7,9 +7,53 @@ from django.db.models import Q, Count, Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-
+from django.core.mail import send_mail
+from django.conf import settings
 from .forms import OffenderForm
 from .models import Offender, Warning, Ban, IncidentOffender
+
+def _venue_email_for(venue):
+    """Return the best email address from a Venue instance."""
+    # Your Venue has `email`, but we’ll be defensive.
+    for attr in ("email", "contact_email", "notification_email"):
+        addr = getattr(venue, attr, None)
+        if addr:
+            return addr
+    return None
+
+def send_ban_notification(offender, ban, venue):
+    """Email the venue with ban details, if venue has an email."""
+    to_email = _venue_email_for(venue)
+    if not to_email:
+        return  # nothing to send to
+
+    venue_label = getattr(venue, "name", "") or (ban.venue or "All venues")
+    period = f"{ban.start_date} → {ban.end_date or 'open-ended'}"
+    issued_by = (
+        (getattr(ban.issued_by, "get_username", lambda: None)() or
+         getattr(ban.issued_by, "email", None) or
+         "staff")
+    )
+
+    subject = f"[Incident Response] Ban issued: {offender.name}"
+    body = (
+        f"Hello,\n\n"
+        f"A ban has been issued.\n\n"
+        f"Offender: {offender.name}\n"
+        f"Reason: {ban.reason}\n"
+        f"Venue: {venue_label}\n"
+        f"Duration: {period}\n"
+        f"Issued by: {issued_by}\n\n"
+        f"Please log in to the system to review.\n"
+    )
+
+    send_mail(
+        subject=subject,
+        message=body,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+        recipient_list=[to_email],
+        fail_silently=False,  # flip to True in prod if you prefer silent failures
+    )
 
 def offender_page(request):
     offenders = Offender.objects.all().order_by('-created_at')
@@ -61,14 +105,18 @@ def create_offender(request):
                 start = timezone.localdate()
                 dur = form.cleaned_data.get("ban_duration") or ""
                 end = None if dur in ("", "permanent") else start + timedelta(days=int(dur))
-                Ban.objects.create(
+
+                ban = Ban.objects.create(
                     offender=offender,
                     reason=form.cleaned_data.get("ban_reason") or "Auto-created at offender creation.",
-                    venue="",
+                    venue="",  # your Ban.venue is a CharField label
                     start_date=start,
                     end_date=end,
                     issued_by=request.user,
                 )
+                if form.cleaned_data.get("notify_venue") and form.cleaned_data.get("venue_to_notify"):
+                    send_ban_notification(offender, ban, form.cleaned_data["venue_to_notify"])
+
             return redirect("offender-home")
     else:
         form = OffenderForm()
@@ -103,6 +151,9 @@ def update_offender(request, pk):
                     end_date=end,
                     issued_by=request.user,
                 )
+                if form.cleaned_data.get("notify_venue") and form.cleaned_data.get("venue_to_notify"):
+                    send_ban_notification(offender, ban, form.cleaned_data["venue_to_notify"])
+
             return redirect("offender-home")
     else:
         form = OffenderForm(instance=offender)

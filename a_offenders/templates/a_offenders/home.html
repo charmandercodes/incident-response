@@ -3,14 +3,16 @@
 <section class="bg-white dark:bg-gray-900 py-8 md:py-12">
   <div class="mx-auto max-w-screen-lg px-4">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <h1 class="text-3xl font-semibold text-gray-900 dark:text-white">All Offenders</h1>
+  <h1 class="text-3xl font-semibold text-gray-900 dark:text-white">All Offenders</h1>
 
-      {% if request.user.is_authenticated %}
-        <a href="{% url 'create-offender' %}"
-           class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-          Create Offender
+  {% if request.user.is_authenticated %}
+    <a href="{% url 'create-offender' %}"
+       class="inline-flex items-center justify-center h-10 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white
+              shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+              dark:focus:ring-offset-gray-900">
+        Create Offender
         </a>
-      {% endif %}
+    {% endif %}
     </div>
 
     <!-- Search -->
@@ -66,26 +68,39 @@
               {% if offender.sex %}<p>Sex: {{ offender.get_sex_display }}</p>{% endif %}
             </div>
 
-            <div class="mt-5 flex gap-2">
-              <a href="{% url 'offender-detail' offender.id %}"
-                 class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100
-                        dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700">
-                View Details
-              </a>
-              <a href="{% url 'update-offender' offender.id %}"
-                 class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100
-                        dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700">
-                Update
-              </a>
-              <form action="{% url 'delete-offender' offender.id %}" method="post"
-                    onsubmit="return confirm('Delete this offender?');">
-                {% csrf_token %}
-                <button class="rounded-lg border px-4 py-2 text-sm font-medium text-red-600
-                                hover:bg-red-50 dark:border-red-700 dark:hover:bg-red-900/20">
-                  Delete
-                </button>
-              </form>
-            </div>
+            <div class="mt-5 grid grid-cols-3 gap-2 w-full">
+    <!-- View Details (neutral outline) -->
+    <a href="{% url 'offender-detail' offender.id %}"
+        class="inline-flex items-center justify-center h-10 rounded-lg border px-3 text-sm font-medium
+            border-gray-300 text-gray-900 hover:bg-gray-50
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+            dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900">
+        View Details
+    </a>
+
+    <!-- Update (blue outline) -->
+    <a href="{% url 'update-offender' offender.id %}"
+        class="inline-flex items-center justify-center h-10 rounded-lg border px-3 text-sm font-medium
+            border-blue-200 text-blue-700 hover:bg-blue-50
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+            dark:border-blue-700/50 dark:text-blue-300 dark:hover:bg-blue-900/20 dark:focus:ring-offset-gray-900">
+        Update
+    </a>
+
+    <!-- Delete (POST form; red outline) -->
+    <form action="{% url 'delete-offender' offender.id %}" method="post"
+        onsubmit="return confirm('Delete this offender?');"
+        class="inline-flex">
+        {% csrf_token %}
+        <button
+         class="inline-flex w-full items-center justify-center h-10 rounded-lg border px-3 text-sm font-medium
+             border-red-200 text-red-700 hover:bg-red-50
+             focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
+             dark:border-red-700/60 dark:text-red-300 dark:hover:bg-red-900/20 dark:focus:ring-offset-gray-900">
+        Delete
+        </button>
+    </form>
+    </div>
 
             <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
               Added {{ offender.created_at|date:"M d, Y" }}
