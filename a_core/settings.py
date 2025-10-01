@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'a_analytics',
     # third party apps
     'django_cotton',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

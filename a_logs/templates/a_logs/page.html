@@ -20,33 +20,17 @@
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filter Logs</h2>
             <form method="GET" action="">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                    <div>
-                        <label for="{{ form.username.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Username
-                        </label>
-                        {{ form.username }}
-                    </div>
-                    
-                    <div>
-                        <label for="{{ form.action_flag.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Action Type
-                        </label>
-                        {{ form.action_flag }}
-                    </div>
-                    
-                    <div>
-                        <label for="{{ form.date_from.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            From Date
-                        </label>
-                        {{ form.date_from }}
-                    </div>
-                    
-                    <div>
-                        <label for="{{ form.date_to.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            To Date
-                        </label>
-                        {{ form.date_to }}
-                    </div>
+                    {% for field in filter.form %}  <!-- This accesses the form inside the filterset -->
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                {{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ field.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
                 </div>
                 
                 <div class="flex gap-2">
@@ -63,7 +47,7 @@
                 </div>
             </form>
         </div>
-        
+                
         <!-- Table Section -->
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">

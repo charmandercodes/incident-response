@@ -19,26 +19,20 @@
         <div class="mb-6">
             <form method="GET" action="" class="flex gap-4 items-center">
                 <div class="flex-1">
-                    <label for="offender_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    <label for="{{ filter.form.offender_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         Filter by Offender Name
                     </label>
-                    <input type="text" 
-                        id="offender_name" 
-                        name="offender_name"
-                        value="{{ offender_name }}"
-                        placeholder="Enter offender name..."
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                        maxlength="100">
+                    {{ filter.form.offender_name }}
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave empty to show all incidents</p>
                 </div>
-                <div class="mt-2">
+                <div class="flex gap-2 mt-2">
                     <button type="submit"
                             class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 whitespace-nowrap">
                         Filter
                     </button>
                     {% if offender_name %}
                     <a href="{% url 'analytics' %}"
-                    class="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 whitespace-nowrap">
+                       class="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 whitespace-nowrap">
                         Clear
                     </a>
                     {% endif %}

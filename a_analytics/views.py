@@ -5,63 +5,55 @@ from django.contrib import messages
 import json
 
 from a_incidents.models import Incident
-from a_offenders.models import Offender
-from .forms import OffenderFilterForm
+from .filters import IncidentFilter
+
 
 def dashboard_view(request):
-    form = OffenderFilterForm(request.GET)
-    offender_name = ''
-    
-    # Initialize context
-    context = {
-        'chart_months': json.dumps([]),
-        'chart_counts': json.dumps([]),
-        'form': form,
-    }
-    
-    # Base queryset
+    # Base queryset - incidents from 2025 onwards
     queryset = Incident.objects.filter(created_at__year__gte=2025)
     
-    # Validate form
-    if form.is_valid():
-        offender_name = form.cleaned_data.get('offender_name', '')
-        
-        if offender_name:
-            try:
-                matching_offenders = Offender.objects.filter(name__icontains=offender_name)
-                
-                if not matching_offenders.exists():
-                    messages.warning(request, f"No offender found with name containing '{offender_name}'. Showing all incidents.")
-                else:
-                    queryset = queryset.filter(offender__in=matching_offenders)
-                    
-                    if matching_offenders.count() == 1:
-                        messages.success(request, f"Showing incidents for: {matching_offenders.first().name}")
-                    else:
-                        offender_names = ", ".join([o.name for o in matching_offenders[:3]])
-                        if matching_offenders.count() > 3:
-                            offender_names += f" and {matching_offenders.count() - 3} more"
-                        messages.info(request, f"Found {matching_offenders.count()} matching offenders: {offender_names}")
-                        
-            except Exception as e:
-                messages.error(request, "An error occurred while searching for the offender.")
-                print(f"Error: {str(e)}")
-    else:
-        # Form is invalid, display errors
-        for field, errors in form.errors.items():
+    # Apply filter
+    filterset = IncidentFilter(request.GET, queryset=queryset)
+    
+    # Check if filters are applied
+    filters_applied = bool(request.GET.get('offender_name'))
+    
+    # Get the offender name for context
+    offender_name = request.GET.get('offender_name', '')
+    
+    # Check for form errors
+    if filterset.form.errors:
+        for field, errors in filterset.form.errors.items():
             for error in errors:
                 messages.error(request, error)
     
-    # Get incident data
+    # Get filtered queryset
+    filtered_queryset = filterset.qs
+    
+    # Provide user feedback
+    if offender_name and filtered_queryset.exists():
+        # Get unique offenders in the results
+        matching_offenders = filtered_queryset.values_list('offender__name', flat=True).distinct()
+        offender_count = len(matching_offenders)
+        
+        if offender_count == 1:
+            messages.success(request, f"Showing incidents for: {matching_offenders[0]}")
+        else:
+            offender_list = ", ".join(list(matching_offenders)[:3])
+            if offender_count > 3:
+                offender_list += f" and {offender_count - 3} more"
+            messages.info(request, f"Found {offender_count} matching offenders: {offender_list}")
+    elif offender_name and not filtered_queryset.exists():
+        messages.warning(request, f"No offender found with name containing '{offender_name}'. Showing all incidents.")
+        filtered_queryset = queryset  # Reset to show all
+    
+    # Get incident data for chart
     try:
-        if not queryset.exists():
-            if offender_name:
-                messages.warning(request, "No incidents found for the selected offender since 2025.")
-            else:
-                messages.info(request, "No incidents have been recorded since 2025 yet.")
+        if not filtered_queryset.exists():
+            messages.info(request, "No incidents have been recorded since 2025 yet.")
         
         incident_data = (
-            queryset
+            filtered_queryset
             .annotate(date=TruncDate('created_at'))
             .values('date')
             .annotate(count=Count('id'))
@@ -76,11 +68,23 @@ def dashboard_view(request):
                 months.append(item['date'].strftime('%b %d, %Y'))
                 counts.append(item['count'])
         
-        context['chart_months'] = json.dumps(months)
-        context['chart_counts'] = json.dumps(counts)
+        context = {
+            'chart_months': json.dumps(months),
+            'chart_counts': json.dumps(counts),
+            'filter': filterset,
+            'offender_name': offender_name,
+            'filters_applied': filters_applied,
+        }
         
     except Exception as e:
         messages.error(request, "An error occurred while loading incident data.")
         print(f"Dashboard error: {str(e)}")
+        context = {
+            'chart_months': json.dumps([]),
+            'chart_counts': json.dumps([]),
+            'filter': filterset,
+            'offender_name': offender_name,
+            'filters_applied': filters_applied,
+        }
     
     return render(request, 'a_analytics/dashboard.html', context)
