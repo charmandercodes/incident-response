@@ -9,13 +9,6 @@ from .forms import IncidentForm
 
 
 def _apply_filters_and_sorting(request, qs: QuerySet) -> QuerySet:
-    """
-    Adds the requested filtering/sorting on top of the base queryset:
-      - search: ?search=term
-      - filter by venue(s): ?venue=A&venue=B
-      - sort by severity: ?sort=severity_asc|severity_desc
-    """
-   
     search_query = request.GET.get("search", "").strip()
     if search_query:
         qs = qs.filter(
@@ -25,12 +18,10 @@ def _apply_filters_and_sorting(request, qs: QuerySet) -> QuerySet:
             | Q(offender_name__icontains=search_query)
         )
 
-    
     venue_params = [v.strip() for v in request.GET.getlist("venue") if v.strip()]
     if venue_params:
         qs = qs.filter(venue__in=venue_params)
 
-    # Sort by severity (fallback is newest first)
     sort = request.GET.get("sort")
     if sort == "severity_asc":
         qs = qs.order_by("severity", "-created_at")
@@ -43,11 +34,8 @@ def _apply_filters_and_sorting(request, qs: QuerySet) -> QuerySet:
 
 
 def home_page(request):
-    
-    incidents = Incident.objects.all()
-    incidents = _apply_filters_and_sorting(request, incidents)
+    incidents = _apply_filters_and_sorting(request, Incident.objects.all())
 
-    
     venues = (
         Incident.objects.exclude(venue__isnull=True)
         .exclude(venue__exact="")
@@ -56,7 +44,6 @@ def home_page(request):
         .order_by("venue")
     )
 
-    
     sel_venues = request.GET.getlist("venue")
     search = request.GET.get("search", "")
     sort = request.GET.get("sort", "")
@@ -82,14 +69,14 @@ def create_incident(request):
             incident = form.save()
             send_incident_notification(incident, request.user)
             return redirect("home")
+        # fallthrough to re-render with errors
     else:
         form = IncidentForm()
     return render(request, "a_incidents/create_incident.html", {"form": form})
 
 
 def send_incident_notification(incident, created_by):
-    
-    staff_emails = ["rehaan.rahman6@gmail.com"]  
+    staff_emails = ["rehaan.rahman6@gmail.com"]
     if not staff_emails:
         return
     subject = f"New Incident Reported: {incident.title}"
@@ -98,9 +85,9 @@ A new incident has been reported:
 
 Title: {incident.title}
 Venue: {incident.venue}
-Severity: {incident.get_severity_display()}
-Reported by: {created_by.username}
-Date: {incident.created_at.strftime('%B %d, %Y at %I:%M %p')}
+Severity: {incident.get_severity_display() if hasattr(incident, 'get_severity_display') else getattr(incident, 'severity', '-') }
+Reported by: {getattr(created_by, 'username', 'unknown')}
+Date: {incident.created_at.strftime('%B %d, %Y at %I:%M %p') if hasattr(incident, 'created_at') else ''}
 
 Description:
 {incident.description}
@@ -116,7 +103,6 @@ Please log in to the system to review the full details.
             fail_silently=True,
         )
     except Exception:
-        
         pass
 
 
@@ -126,7 +112,6 @@ def delete_incident(request, pk):
     if request.method == "POST":
         incident.delete()
         return redirect("home")
-    # Simple confirm page inline (optional)
     return render(request, "a_incidents/confirm_delete.html", {"incident": incident})
 
 
@@ -138,6 +123,7 @@ def update_incident(request, pk):
         if form.is_valid():
             form.save()
             return redirect("home")
+        # fallthrough to show errors
     else:
         form = IncidentForm(instance=incident)
     return render(request, "a_incidents/incident_form.html", {"form": form, "incident": incident})
