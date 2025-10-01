@@ -1,67 +1,96 @@
-from django.shortcuts import render, redirect
-from a_incidents.models import Incident
-from .forms import IncidentForm
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.db.models import Q, QuerySet
 
-# Create your views here.
+from a_incidents.models import Incident
+from .forms import IncidentForm
 
-# In your views.py
-from django.db.models import Q
+
+def _apply_filters_and_sorting(request, qs: QuerySet) -> QuerySet:
+    """
+    Adds the requested filtering/sorting on top of the base queryset:
+      - search: ?search=term
+      - filter by venue(s): ?venue=A&venue=B
+      - sort by severity: ?sort=severity_asc|severity_desc
+    """
+    # Search (kept from your original code)
+    search_query = request.GET.get("search", "").strip()
+    if search_query:
+        qs = qs.filter(
+            Q(title__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(venue__icontains=search_query)
+            | Q(offender_name__icontains=search_query)
+        )
+
+    # Filter by one or more venue strings (multi-select)
+    venue_params = [v.strip() for v in request.GET.getlist("venue") if v.strip()]
+    if venue_params:
+        qs = qs.filter(venue__in=venue_params)
+
+    # Sort by severity (fallback is newest first)
+    sort = request.GET.get("sort")
+    if sort == "severity_asc":
+        qs = qs.order_by("severity", "-created_at")
+    elif sort == "severity_desc":
+        qs = qs.order_by("-severity", "-created_at")
+    else:
+        qs = qs.order_by("-created_at")
+
+    return qs
 
 
 def home_page(request):
-    incidents = Incident.objects.all().order_by('-created_at')
-    
-    # Handle search
-    search_query = request.GET.get('search', '')
-    if search_query:
-        incidents = incidents.filter(
-            Q(title__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(venue__icontains=search_query) |
-            Q(offender_name__icontains=search_query)
-        )
-    
-    # Regular request, return full page
-    return render(request, 'a_incidents/home.html', {
-        'incidents': incidents
-    })
+    # Base queryset
+    incidents = Incident.objects.all()
+    incidents = _apply_filters_and_sorting(request, incidents)
+
+    # Compute unique venue list for the filter box
+    venues = (
+        Incident.objects.exclude(venue__isnull=True)
+        .exclude(venue__exact="")
+        .values_list("venue", flat=True)
+        .distinct()
+        .order_by("venue")
+    )
+
+    return render(
+        request,
+        "a_incidents/home.html",
+        {
+            "incidents": incidents,
+            "venues": venues,
+        },
+    )
+
 
 @login_required
 def create_incident(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = IncidentForm(request.POST)
         if form.is_valid():
             incident = form.save()
             send_incident_notification(incident, request.user)
-            return redirect('home')  # Redirect to a list or detail page
-        
+            return redirect("home")
     else:
         form = IncidentForm()
+    return render(request, "a_incidents/create_incident.html", {"form": form})
 
-    return render(request, 'a_incidents/create_incident.html', {'form': form})
 
 def send_incident_notification(incident, created_by):
-    print("NOTIFICATION FUNCTION CALLED!")
-    
-    # For testing - hardcode your email
-    staff_emails = ['rehaan.rahman6@gmail.com']  # Replace with your actual email
-    
-    print(f"Staff emails found: {staff_emails}")
-    
+    # For testing — uses your settings.DEFAULT_FROM_EMAIL
+    staff_emails = ["rehaan.rahman6@gmail.com"]  # replace with your list if needed
     if not staff_emails:
         return
-    
     subject = f"New Incident Reported: {incident.title}"
-    
     message = f"""
 A new incident has been reported:
 
 Title: {incident.title}
 Venue: {incident.venue}
+Severity: {incident.get_severity_display()}
 Reported by: {created_by.username}
 Date: {incident.created_at.strftime('%B %d, %Y at %I:%M %p')}
 
@@ -69,8 +98,7 @@ Description:
 {incident.description}
 
 Please log in to the system to review the full details.
-    """
-    
+    """.strip()
     try:
         send_mail(
             subject=subject,
@@ -79,38 +107,29 @@ Please log in to the system to review the full details.
             recipient_list=staff_emails,
             fail_silently=True,
         )
-        print("Email sent successfully!")
-    except Exception as e:
-        print(f"Failed to send notification email: {e}")
-# views.py
-from django.shortcuts import get_object_or_404, redirect, render
-from .models import Incident
+    except Exception:
+        # Keep silent for local dev as your original code did
+        pass
+
 
 @login_required
 def delete_incident(request, pk):
-
     incident = get_object_or_404(Incident, pk=pk)
-
-    if request.method == "POST":  # User confirmed deletion
+    if request.method == "POST":
         incident.delete()
-        return redirect('home')  # Go back to list after deleting
+        return redirect("home")
+    # Simple confirm page inline (optional)
+    return render(request, "a_incidents/confirm_delete.html", {"incident": incident})
 
 
 @login_required
 def update_incident(request, pk):
-
     incident = get_object_or_404(Incident, pk=pk)
-
     if request.method == "POST":
         form = IncidentForm(request.POST, instance=incident)
         if form.is_valid():
             form.save()
-            return redirect('home')
+            return redirect("home")
     else:
         form = IncidentForm(instance=incident)
-    print(incident.title, incident.description)
-
-
-    return render(request, 'a_incidents/incident_form.html', {'form': form})
-
-
+    return render(request, "a_incidents/incident_form.html", {"form": form, "incident": incident})
