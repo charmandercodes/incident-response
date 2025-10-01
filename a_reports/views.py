@@ -26,7 +26,15 @@ def _pdf_response(filename: str, buffer: BytesIO) -> HttpResponse:
     return resp
 
 
-def _draw_multiline(c: canvas.Canvas, text: str, x: float, y: float, max_width: float, leading: int = 14, size: int = 10):
+def _draw_multiline(
+    c: canvas.Canvas,
+    text: str,
+    x: float,
+    y: float,
+    max_width: float,
+    leading: int = 14,
+    size: int = 10,
+):
     """Draw word-wrapped text at (x,y) and return height consumed."""
     style = getSampleStyleSheet()["BodyText"]
     style.fontName = "Helvetica"
@@ -70,6 +78,7 @@ def _new_page(c: canvas.Canvas, title: str, subtitle: str, page_num: int):
 
 
 def _sev_display(inc: Incident) -> str:
+    """Return a friendly severity string from the model, fallback to raw value."""
     try:
         d = inc.get_severity_display()
         if d:
@@ -79,10 +88,24 @@ def _sev_display(inc: Incident) -> str:
     return str(getattr(inc, "severity", "-"))
 
 
+def _sev_normalize(label: str) -> str:
+    """Normalize assorted values to exactly 'Low', 'Medium', or 'High'."""
+    s = (label or "").strip().lower()
+    if s in {"low", "l", "lo"}:
+        return "Low"
+    if s in {"medium", "med", "m"}:
+        return "Medium"
+    if s in {"high", "hi", "h"}:
+        return "High"
+    # If it doesn't match, drop into 'Medium' to avoid odd buckets.
+    return "Medium"
+
+
 # === Combined PDF =============================================================
 def combined_incident_report(request):
     """
     GET /reports/combined/?id=1&id=2...
+    Creates a combined PDF with summary, totals, severity bars, and details.
     """
     ids = [s for s in request.GET.getlist("id") if str(s).strip()]
     if not ids:
@@ -106,13 +129,19 @@ def combined_incident_report(request):
     if not qs.exists():
         raise Http404("No incidents found for the provided ids")
 
-    # Analytics (make keys hashable + readable)
+    # --- Analytics ---
     by_venue = Counter((i.venue or "Unknown") for i in qs)
-    by_sev = Counter(_sev_display(i) for i in qs)
+
+    # Normalize severities into exactly Low/Medium/High buckets.
+    by_sev_raw = Counter(_sev_normalize(_sev_display(i)) for i in qs)
+    # Always present all three labels, even if zero.
+    SEV_LABELS = ["Low", "Medium", "High"]
+    by_sev = {lab: by_sev_raw.get(lab, 0) for lab in SEV_LABELS}
+
     warn_count = sum(1 for i in qs if str(getattr(i, "warning", "")).lower() == "yes")
     ban_count = sum(1 for i in qs if str(getattr(i, "ban", "")).lower() == "yes")
 
-    # PDF build
+    # --- PDF build ---
     buf = BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     width, height = A4
@@ -137,7 +166,7 @@ def combined_incident_report(request):
     c.drawString(margin, y, f"Warnings: {warn_count}    Bans: {ban_count}")
     y -= 8 * mm
 
-    # Totals per Venue (table-ish)
+    # Totals per Venue
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Totals per Venue")
     y -= 6 * mm
@@ -166,19 +195,16 @@ def combined_incident_report(request):
 
     y -= 4 * mm
 
-    # Severity distribution (smaller, consistent bars)
+    # Severity distribution — ALWAYS show Low/Medium/High (some may be 0)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Severity Distribution")
     y -= 6 * mm
 
-    # Fixed bar width so 1 bucket doesn’t fill the page
-    ordered_labels = ["Low", "Medium", "High"]
-    labels = [lab for lab in ordered_labels if lab in by_sev] or list(by_sev.keys()) or ["Low", "Medium", "High"]
-    max_val = max(by_sev.values()) if by_sev else 1
-
+    max_val = max(by_sev.values()) if any(by_sev.values()) else 1
     max_bar_h = 25 * mm
     bar_w = 22 * mm
     gap = 8 * mm
+    labels = ["Low", "Medium", "High"]
     total_w = len(labels) * bar_w + (len(labels) - 1) * gap
     start_x = margin + (body_width - total_w) / 2  # center bars
 
@@ -187,7 +213,6 @@ def combined_incident_report(request):
     c.setLineWidth(0.6)
     c.line(margin, y, margin + body_width, y)
 
-    # Bars
     for idx, label in enumerate(labels):
         val = by_sev.get(label, 0)
         bar_h = max_bar_h * (val / max_val if max_val else 0)
@@ -195,7 +220,7 @@ def combined_incident_report(request):
         # bar
         c.setFillColor(colors.HexColor("#3B82F6"))
         c.rect(x, y - bar_h, bar_w, bar_h, stroke=0, fill=1)
-        # value on top
+        # value on top (show 0 too for clarity)
         c.setFillColor(colors.HexColor("#111827"))
         c.setFont("Helvetica-Bold", 9)
         c.drawCentredString(x + bar_w / 2, y - bar_h - 4, str(val))
