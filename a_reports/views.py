@@ -97,7 +97,7 @@ def _sev_normalize(label: str) -> str:
         return "Medium"
     if s in {"high", "hi", "h"}:
         return "High"
-    # If it doesn't match, drop into 'Medium' to avoid odd buckets.
+    # Default bucket to keep the chart stable
     return "Medium"
 
 
@@ -105,7 +105,7 @@ def _sev_normalize(label: str) -> str:
 def combined_incident_report(request):
     """
     GET /reports/combined/?id=1&id=2...
-    Creates a combined PDF with summary, totals, severity bars, and details.
+    Creates a combined PDF with summary, totals, severity bars (with %), and details.
     """
     ids = [s for s in request.GET.getlist("id") if str(s).strip()]
     if not ids:
@@ -134,9 +134,9 @@ def combined_incident_report(request):
 
     # Normalize severities into exactly Low/Medium/High buckets.
     by_sev_raw = Counter(_sev_normalize(_sev_display(i)) for i in qs)
-    # Always present all three labels, even if zero.
     SEV_LABELS = ["Low", "Medium", "High"]
     by_sev = {lab: by_sev_raw.get(lab, 0) for lab in SEV_LABELS}
+    total_inc = sum(by_sev.values()) or 1  # avoid div/0
 
     warn_count = sum(1 for i in qs if str(getattr(i, "warning", "")).lower() == "yes")
     ban_count = sum(1 for i in qs if str(getattr(i, "ban", "")).lower() == "yes")
@@ -195,7 +195,7 @@ def combined_incident_report(request):
 
     y -= 4 * mm
 
-    # Severity distribution — ALWAYS show Low/Medium/High (some may be 0)
+    # Severity distribution — ALWAYS show Low/Medium/High with counts + percentages
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Severity Distribution")
     y -= 6 * mm
@@ -204,7 +204,7 @@ def combined_incident_report(request):
     max_bar_h = 25 * mm
     bar_w = 22 * mm
     gap = 8 * mm
-    labels = ["Low", "Medium", "High"]
+    labels = SEV_LABELS
     total_w = len(labels) * bar_w + (len(labels) - 1) * gap
     start_x = margin + (body_width - total_w) / 2  # center bars
 
@@ -215,15 +215,19 @@ def combined_incident_report(request):
 
     for idx, label in enumerate(labels):
         val = by_sev.get(label, 0)
+        pct = (val / total_inc) * 100.0
         bar_h = max_bar_h * (val / max_val if max_val else 0)
         x = start_x + idx * (bar_w + gap)
+
         # bar
         c.setFillColor(colors.HexColor("#3B82F6"))
         c.rect(x, y - bar_h, bar_w, bar_h, stroke=0, fill=1)
-        # value on top (show 0 too for clarity)
+
+        # value + percent on/above the bar
         c.setFillColor(colors.HexColor("#111827"))
         c.setFont("Helvetica-Bold", 9)
-        c.drawCentredString(x + bar_w / 2, y - bar_h - 4, str(val))
+        c.drawCentredString(x + bar_w / 2, y - bar_h - 4, f"{val} ({pct:.0f}%)")
+
         # label
         c.setFont("Helvetica", 9)
         c.drawCentredString(x + bar_w / 2, y + 4, label)
