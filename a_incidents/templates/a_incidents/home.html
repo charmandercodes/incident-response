@@ -4,7 +4,7 @@
 <h2 class="text-2xl font-semibold mb-4">All Incidents</h2>
 
 {% if request.user.is_authenticated %}
-
+  <!-- Controls: search, multi-venue filter, severity sort -->
   <form method="get" class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-3 mb-4">
     <div>
       <label class="block text-sm font-medium mb-1">Search</label>
@@ -19,11 +19,11 @@
       <select name="venue" multiple
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5
                      dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-28">
-        {% for v in venues %}
-          {% with sel_list=request.GET.getlist "venue" %}
+        {% with request.GET.getlist('venue') as sel_list %}
+          {% for v in venues %}
             <option value="{{ v }}" {% if v in sel_list %}selected{% endif %}>{{ v }}</option>
-          {% endwith %}
-        {% endfor %}
+          {% endfor %}
+        {% endwith %}
       </select>
       <p class="text-xs text-gray-500 mt-1">Hold Cmd/Ctrl to select multiple venues.</p>
     </div>
