@@ -29,26 +29,7 @@ class LogEntryFilter(django_filters.FilterSet):
         })
     )
     
-    date_from = django_filters.DateFilter(
-        field_name='action_time',
-        lookup_expr='gte',
-        label='From Date',
-        widget=forms.DateInput(attrs={
-            'type': 'date',
-            'class': 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white',
-        })
-    )
-    
-    date_to = django_filters.DateFilter(
-        field_name='action_time',
-        lookup_expr='lte',
-        label='To Date',
-        widget=forms.DateInput(attrs={
-            'type': 'date',
-            'class': 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white',
-        })
-    )
     
     class Meta:
         model = LogEntry
-        fields = ['username', 'action_flag', 'date_from', 'date_to']
+        fields = ['username', 'action_flag']

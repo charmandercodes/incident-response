@@ -19,7 +19,7 @@
         <div class="mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filter Logs</h2>
             <form method="GET" action="">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
                     {% for field in filter.form %}  <!-- This accesses the form inside the filterset -->
                         <div>
                             <label for="{{ field.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
