@@ -1,0 +1,129 @@
+{% extends "a_incidents/base.html" %}
+{% block content %}
+<section class="bg-white dark:bg-gray-900">
+  <div class="max-w-4xl px-4 py-8 mx-auto">
+    <a href="{% url 'offender-home' %}" class="text-sm text-gray-500 hover:underline dark:text-gray-400">← Back</a>
+
+    <div class="mt-4 rounded-lg border bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700">
+      <div class="p-6 flex gap-6 items-start">
+        <div>
+          {% if offender.photo %}
+            <img src="{{ offender.photo.url }}" class="w-28 h-28 rounded-full object-cover border" alt="{{ offender.name }}">
+          {% else %}
+            <div class="w-28 h-28 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <svg class="w-12 h-12 text-gray-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.2 0-8 1.6-8 4v2h16v-2c0-2.4-4.8-4-8-4Z"/></svg>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{{ offender.name }}</h1>
+            {% if offender.is_currently_banned %}
+              <span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">Banned</span>
+            {% endif %}
+            {% if offender.warnings_count %}
+              <span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+                {{ offender.warnings_count }} Warning{{ offender.warnings_count|pluralize }}
+              </span>
+            {% endif %}
+          </div>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Created {{ offender.created_at|date:"M d, Y" }}{% if offender.updated_at and offender.updated_at != offender.created_at %} • Updated {{ offender.updated_at|date:"M d, Y" }}{% endif %}
+          </p>
+
+          <dl class="mt-4 grid grid-cols-2 gap-4 text-sm">
+            {% if offender.age %}<div><dt class="text-gray-500">Age</dt><dd class="font-medium">{{ offender.age }}</dd></div>{% endif %}
+            {% if offender.sex %}<div><dt class="text-gray-500">Sex</dt><dd class="font-medium">{{ offender.get_sex_display }}</dd></div>{% endif %}
+            {% if offender.height %}<div><dt class="text-gray-500">Height</dt><dd class="font-medium">{{ offender.height }}</dd></div>{% endif %}
+            {% if offender.weight %}<div><dt class="text-gray-500">Weight</dt><dd class="font-medium">{{ offender.weight }}</dd></div>{% endif %}
+            {% if offender.occupation %}<div class="col-span-2"><dt class="text-gray-500">Occupation</dt><dd class="font-medium">{{ offender.occupation }}</dd></div>{% endif %}
+            {% if offender.address %}<div class="col-span-2"><dt class="text-gray-500">Address</dt><dd class="font-medium whitespace-pre-line">{{ offender.address }}</dd></div>{% endif %}
+          </dl>
+        </div>
+
+        <div class="shrink-0 flex flex-col gap-2">
+          <a href="{% url 'update-offender' offender.id %}" class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Edit</a>
+          <form action="{% url 'delete-offender' offender.id %}" method="post" onsubmit="return confirm('Delete this offender?');">
+            {% csrf_token %}
+            <button class="w-full inline-flex items-center justify-center rounded-lg border px-4 py-2 text-sm font-medium text-red-600 border-red-300 hover:bg-red-50 dark:border-red-700 dark:hover:bg-red-900/20">Delete</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="border-t dark:border-gray-700 grid md:grid-cols-2 gap-6 p-6">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Contact</h3>
+          <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ offender.contact_info|default:"—" }}</p>
+
+          <h3 class="mt-6 text-sm font-semibold text-gray-900 dark:text-white mb-2">Notes</h3>
+          <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ offender.notes|default:"—" }}</p>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Active Bans</h3>
+          {% if active_bans %}
+            <ul class="space-y-2">
+              {% for b in active_bans %}
+                <li class="rounded border p-3 text-sm dark:border-gray-700">
+                  <div class="flex justify-between">
+                    <span class="font-medium text-red-700 dark:text-red-400">{{ b.venue|default:"All venues" }}</span>
+                    <span class="text-gray-500">{{ b.start_date }}{% if b.end_date %} → {{ b.end_date }}{% else %} → open-ended{% endif %}</span>
+                  </div>
+                  <p class="mt-1 text-gray-700 dark:text-gray-300">{{ b.reason }}</p>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-sm text-gray-500">No active bans.</p>
+          {% endif %}
+
+          <h3 class="mt-6 text-sm font-semibold text-gray-900 dark:text-white mb-2">Recent Warnings</h3>
+          {% if warnings %}
+            <ul class="divide-y dark:divide-gray-700">
+              {% for w in warnings|slice:":5" %}
+                <li class="py-2 text-sm">
+                  <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium
+                      {% if w.severity == 'C' %}bg-red-100 text-red-800
+                      {% elif w.severity == 'H' %}bg-orange-100 text-orange-800
+                      {% elif w.severity == 'M' %}bg-yellow-100 text-yellow-800
+                      {% else %}bg-gray-100 text-gray-800{% endif %}">
+                      {{ w.get_severity_display }}
+                    </span>
+                    <span class="text-gray-500">{{ w.date }}</span>
+                  </div>
+                  <p class="mt-1 text-gray-700 dark:text-gray-300">{{ w.notes }}</p>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-sm text-gray-500">No warnings on record.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="border-t dark:border-gray-700 p-6">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Linked Incidents</h3>
+        {% if incident_links %}
+          <ul class="space-y-2">
+            {% for link in incident_links %}
+              <li class="rounded border p-3 text-sm dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium text-gray-900 dark:text-white">Incident #{{ link.incident.id }} — {{ link.incident.title }}</div>
+                    <div class="text-gray-500">{{ link.role|default:"(role n/a)" }} • {{ link.linked_at|date:"M d, Y H:i" }}</div>
+                  </div>
+                  <a href="{% url 'incident-detail' link.incident.id %}" class="text-blue-600 hover:underline">Open</a>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-sm text-gray-500">No linked incidents.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

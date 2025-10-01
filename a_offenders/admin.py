@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.contrib import admin
 from .models import Offender, Warning, Ban, IncidentOffender
 
 @admin.register(Offender)
@@ -18,11 +17,9 @@ class WarningAdmin(admin.ModelAdmin):
 class BanAdmin(admin.ModelAdmin):
     list_display = ("offender", "venue", "start_date", "end_date", "is_active", "reason", "issued_by")
     list_filter = ("venue", "is_active", "start_date")
-    search_fields = ("offender__name", "venue__name", "reason")
+    search_fields = ("offender__name", "venue", "reason")
 
 @admin.register(IncidentOffender)
 class IncidentOffenderAdmin(admin.ModelAdmin):
     list_display = ("offender", "incident", "role", "linked_at")
     search_fields = ("offender__name",)
-
-# Register your models here.
