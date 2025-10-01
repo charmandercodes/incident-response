@@ -1,0 +1,38 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  DJANGO_SETTINGS_MODULE: a_core.settings
+  PYTHON_VERSION: "3.13"
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: "$(PYTHON_VERSION)"
+    architecture: "x64"
+
+- script: |
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    echo '##vso[task.prependpath]$HOME/.cargo/bin'
+  displayName: "Install uv"
+
+- script: |
+    uv venv .venv
+    uv pip install -r requirements.txt
+  displayName: "Install dependencies"
+
+- script: |
+    uv run python manage.py makemigrations --check --dry-run
+    uv run python manage.py migrate
+  displayName: "Run migrations"
+
+- script: |
+    uv run python manage.py check
+  displayName: "Django system checks"
+
+- script: |
+    uv run python manage.py test
+  displayName: "Run tests"
