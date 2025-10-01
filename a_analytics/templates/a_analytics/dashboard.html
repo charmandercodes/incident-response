@@ -1,32 +1,42 @@
 {% extends 'a_incidents/base.html' %}
-
 {% block content %}
 <section class="bg-white dark:bg-gray-900">
     <div class="max-w-4xl px-4 py-8 mx-auto lg:py-16">
         <h2 class="mb-8 text-3xl font-bold text-gray-900 dark:text-white">Incidents Over Time</h2>
         
+        <!-- Messages Section -->
+        {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300{% elif message.tags == 'success' %}bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300{% else %}bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300{% endif %}">
+                        <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+                
         <!-- Filter Section -->
         <div class="mb-6">
-            <form method="GET" action="" class="flex gap-4 items-end">
+            <form method="GET" action="" class="flex gap-4 items-center">
                 <div class="flex-1">
-                    <label for="offender" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Filter by Offender
+                    <label for="{{ filter.form.offender_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Filter by Offender Name
                     </label>
-                    <select id="offender" name="offender" 
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            onchange="this.form.submit()">
-                        <option value="">All Offenders</option>
-                        {% for offender in offenders %}
-                            <option value="{{ offender.id }}" {% if selected_offender_id == offender.id|stringformat:"s" %}selected{% endif %}>
-                                {{ offender.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                    {{ filter.form.offender_name }}
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave empty to show all incidents</p>
                 </div>
-                <button type="submit" 
-                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700">
-                    Filter
-                </button>
+                <div class="flex gap-2 mt-2">
+                    <button type="submit"
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 whitespace-nowrap">
+                        Filter
+                    </button>
+                    {% if offender_name %}
+                    <a href="{% url 'analytics' %}"
+                       class="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 whitespace-nowrap">
+                        Clear
+                    </a>
+                    {% endif %}
+                </div>
             </form>
         </div>
 
