@@ -1,14 +1,16 @@
 {% extends 'a_incidents/base.html' %}
+
 {% block content %}
 <section class="bg-white dark:bg-gray-900">
   <div class="max-w-4xl px-4 py-8 mx-auto lg:py-16">
     <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Create Offender Record</h2>
 
-    <form method="post" action="{% url 'create-offender' %}" enctype="multipart/form-data">
+    <!-- IMPORTANT: post to the named URL that exists in urls.py -->
+    <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
-      {{ form.non_field_errors }}
-
-      <div class="grid gap-4 mb-6 sm:grid-cols-2 sm:gap-6">
+      <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
+        {{ form.as_p }}
+      </div>
 
         <!-- Full Name (required) -->
         <div class="sm:col-span-2">
@@ -21,12 +23,10 @@
 
         <!-- Contact Information -->
         <div class="sm:col-span-2">
-          <label for="{{ form.contact_info.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            Contact Information
-          </label>
+          <label for="{{ form.contact_info.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contact Information</label>
           {{ form.contact_info }}
           {% if form.contact_info.errors %}<p class="text-red-600 text-sm mt-1">{{ form.contact_info.errors }}</p>{% endif %}
-          <p class="text-gray-500 text-xs mt-1">Phone, email, or other contact details (optional)</p>
+          <p class="text-gray-500 text-xs mt-1">Phone, email, or other contact details.</p>
         </div>
 
         <!-- Photo -->
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <!-- Basic fields -->
+        <!-- Optional basics -->
         <div>
           <label for="{{ form.age.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Age</label>
           {{ form.age }}
@@ -81,11 +81,11 @@
           {{ form.notes }}
         </div>
 
-        <!-- Immediate Actions -->
+        <!-- Immediate Actions (Warning / Ban + Venue Email) -->
         <div class="sm:col-span-2 mt-4 p-4 rounded-lg border">
           <h3 class="font-semibold mb-3">Immediate Actions</h3>
 
-          <!-- Warning -->
+          <!-- Quick Warning -->
           <div class="mb-3">
             <label class="inline-flex items-center gap-2">
               {{ form.warning_now }} <span>Create a Warning now?</span>
@@ -97,7 +97,7 @@
             <p class="text-xs text-gray-500 mt-1">Only used if “Create a Warning now?” is ticked.</p>
           </div>
 
-          <!-- Ban -->
+          <!-- Quick Ban -->
           <div class="mb-3">
             <label class="inline-flex items-center gap-2">
               {{ form.ban_now }} <span>Create a Ban now?</span>
@@ -114,7 +114,7 @@
             </div>
           </div>
 
-          <!-- Notify venue (U128) -->
+          <!-- Notify venue on ban (uses venue picker) -->
           <div class="mt-4 grid sm:grid-cols-2 gap-4">
             <label class="inline-flex items-center gap-2 sm:col-span-2">
               {{ form.notify_venue }} <span>Email the venue about this ban?</span>
@@ -125,7 +125,8 @@
                 Venue to notify
               </label>
               {{ form.venue_to_notify }}
-              <p class="text-xs text-gray-500 mt-1">We’ll use the email saved on this venue.</p>
+              {% if form.venue_to_notify.errors %}<p class="text-red-600 text-sm mt-1">{{ form.venue_to_notify.errors }}</p>{% endif %}
+              <p class="text-xs text-gray-500 mt-1">We’ll use the email saved on the venue.</p>
             </div>
           </div>
         </div>
@@ -142,12 +143,14 @@
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center space-x-4">
-        <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
-          Create Offender
-        </button>
-        <a href="{% url 'offender-home' %}" class="inline-block text-sm text-gray-500 hover:underline dark:text-gray-400">
-          Cancel
+      <button type="submit"
+        class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300
+               font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+        Create Offender
+      </button>
+      <a href="{% url 'offender-home' %}"
+        class="ml-2 inline-block text-sm text-gray-500 hover:underline dark:text-gray-400">
+        Cancel
         </a>
       </div>
     </form>
@@ -173,7 +176,7 @@
 })();
 </script>
 
-<!-- Show/hide venue select when checkbox toggles -->
+<!-- Toggle venue picker when "notify venue" is checked -->
 <script>
 (function () {
   const cb = document.getElementById("{{ form.notify_venue.id_for_label }}");
