@@ -8,7 +8,7 @@ from django.utils.timezone import now
 
 from a_incidents.models import Incident
 
-# ---- PDF (ReportLab) ---------------------------------------------------------
+
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
@@ -18,7 +18,7 @@ from reportlab.platypus import Paragraph
 from reportlab.lib.enums import TA_LEFT
 
 
-# === drawing helpers ==========================================================
+
 def _pdf_response(filename: str, buffer: BytesIO) -> HttpResponse:
     buffer.seek(0)
     resp = HttpResponse(buffer.read(), content_type="application/pdf")
@@ -49,7 +49,7 @@ def _draw_multiline(
 
 def _page_header(c: canvas.Canvas, title: str, subtitle: str = ""):
     width, height = A4
-    c.setFillColor(colors.HexColor("#0f172a"))  # slate-900
+    c.setFillColor(colors.HexColor("#0f172a"))  
     c.rect(0, height - 26 * mm, width, 26 * mm, stroke=0, fill=1)
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 18)
@@ -60,13 +60,13 @@ def _page_header(c: canvas.Canvas, title: str, subtitle: str = ""):
 
 def _page_footer(c: canvas.Canvas, page_num: int):
     width, _ = A4
-    c.setFillColor(colors.HexColor("#9ca3af"))  # gray-400
+    c.setFillColor(colors.HexColor("#9ca3af"))  
     c.setFont("Helvetica", 8)
     c.drawRightString(width - 15 * mm, 12 * mm, f"Page {page_num}")
 
 
 def _divider(c: canvas.Canvas, x: float, y: float, w: float):
-    c.setStrokeColor(colors.HexColor("#e5e7eb"))  # gray-200
+    c.setStrokeColor(colors.HexColor("#e5e7eb")) 
     c.setLineWidth(0.6)
     c.line(x, y, x + w, y)
 
@@ -129,10 +129,10 @@ def combined_incident_report(request):
     if not qs.exists():
         raise Http404("No incidents found for the provided ids")
 
-    # --- Analytics ---
+   
     by_venue = Counter((i.venue or "Unknown") for i in qs)
 
-    # Normalize severities into exactly Low/Medium/High buckets.
+    
     by_sev_raw = Counter(_sev_normalize(_sev_display(i)) for i in qs)
     SEV_LABELS = ["Low", "Medium", "High"]
     by_sev = {lab: by_sev_raw.get(lab, 0) for lab in SEV_LABELS}
@@ -141,7 +141,7 @@ def combined_incident_report(request):
     warn_count = sum(1 for i in qs if str(getattr(i, "warning", "")).lower() == "yes")
     ban_count = sum(1 for i in qs if str(getattr(i, "ban", "")).lower() == "yes")
 
-    # --- PDF build ---
+    
     buf = BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     width, height = A4
@@ -152,7 +152,7 @@ def combined_incident_report(request):
 
     _page_header(c, "Combined Incident Report", f"{qs.count()} incident(s) selected")
 
-    # Summary
+    
     c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 13)
     c.drawString(margin, y, "Summary")
@@ -166,7 +166,7 @@ def combined_incident_report(request):
     c.drawString(margin, y, f"Warnings: {warn_count}    Bans: {ban_count}")
     y -= 8 * mm
 
-    # Totals per Venue
+    
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Totals per Venue")
     y -= 6 * mm
@@ -175,7 +175,7 @@ def combined_incident_report(request):
     col1_w = body_width * 0.7
     col2_w = body_width * 0.3
     c.setFont("Helvetica-Bold", 10)
-    c.setFillColor(colors.HexColor("#374151"))  # gray-700
+    c.setFillColor(colors.HexColor("#374151"))  
     c.drawString(margin + 1 * mm, y, "Venue")
     c.drawRightString(margin + col1_w + col2_w - 1 * mm, y, "Count")
     y -= row_h
@@ -195,7 +195,7 @@ def combined_incident_report(request):
 
     y -= 4 * mm
 
-    # Severity distribution — ALWAYS show Low/Medium/High with counts + percentages
+    
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Severity Distribution")
     y -= 6 * mm
@@ -206,9 +206,9 @@ def combined_incident_report(request):
     gap = 8 * mm
     labels = SEV_LABELS
     total_w = len(labels) * bar_w + (len(labels) - 1) * gap
-    start_x = margin + (body_width - total_w) / 2  # center bars
+    start_x = margin + (body_width - total_w) / 2  
 
-    # Axis baseline
+    
     c.setStrokeColor(colors.HexColor("#e5e7eb"))
     c.setLineWidth(0.6)
     c.line(margin, y, margin + body_width, y)
@@ -219,22 +219,22 @@ def combined_incident_report(request):
         bar_h = max_bar_h * (val / max_val if max_val else 0)
         x = start_x + idx * (bar_w + gap)
 
-        # bar
+        
         c.setFillColor(colors.HexColor("#3B82F6"))
         c.rect(x, y - bar_h, bar_w, bar_h, stroke=0, fill=1)
 
-        # value + percent on/above the bar
+        
         c.setFillColor(colors.HexColor("#111827"))
         c.setFont("Helvetica-Bold", 9)
         c.drawCentredString(x + bar_w / 2, y - bar_h - 4, f"{val} ({pct:.0f}%)")
 
-        # label
+      
         c.setFont("Helvetica", 9)
         c.drawCentredString(x + bar_w / 2, y + 4, label)
 
     y -= (max_bar_h + 16 * mm)
 
-    # Details
+    
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Incidents")
     y -= 6 * mm
@@ -270,7 +270,7 @@ def combined_incident_report(request):
     return _pdf_response(f"incidents_combined_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf", buf)
 
 
-# === Enhanced Single-incident PDF ============================================
+
 def enhanced_incident_report(request, pk: int):
     inc = get_object_or_404(Incident, pk=pk)
 
@@ -287,7 +287,7 @@ def enhanced_incident_report(request, pk: int):
 
     _page_header(c, "Incident Report (Enhanced)", f"Incident #{inc.id}")
 
-    # Header
+    
     c.setFont("Helvetica-Bold", 14)
     c.drawString(margin, y, inc.title or f"Incident #{inc.id}")
     y -= 6 * mm
@@ -304,14 +304,14 @@ def enhanced_incident_report(request, pk: int):
     c.drawString(margin, y, meta)
     y -= 10 * mm
 
-    # Description
+    
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Description")
     y -= 6 * mm
     used = _draw_multiline(c, inc.description or "-", margin, y, body_width, leading=14, size=10.5)
     y -= used + 8 * mm
 
-    # Historical Context
+    
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Historical Context")
     y -= 6 * mm
@@ -338,7 +338,7 @@ def enhanced_incident_report(request, pk: int):
     y = small_list("Venue history (last 8):", venue_hist, y)
     y = small_list("Offender history (last 8):", offender_hist, y)
 
-    # Actions
+    
     c.setFont("Helvetica-Bold", 12)
     c.drawString(margin, y, "Actions")
     y -= 6 * mm
@@ -351,3 +351,4 @@ def enhanced_incident_report(request, pk: int):
     _page_footer(c, page)
     c.save()
     return _pdf_response(f"incident_{inc.id}_enhanced.pdf", buf)
+
