@@ -2,11 +2,11 @@ from django.db import models
 
 
 class Incident(models.Model):
-    # Incident fields
+    
     title = models.CharField(max_length=255)
     description = models.TextField()
 
-    # NEW: sortable severity (1=Low .. 5=High)
+    
     SEVERITY_CHOICES = [
         (1, "Low"),
         (2, "Medium-Low"),
@@ -16,11 +16,11 @@ class Incident(models.Model):
     ]
     severity = models.IntegerField(choices=SEVERITY_CHOICES, default=3)
 
-    # When
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Offender linkage (kept as-is from your repo)
+    
     offender = models.ForeignKey(
         "a_offenders.Offender",
         on_delete=models.CASCADE,
@@ -28,10 +28,10 @@ class Incident(models.Model):
         null=True,
         blank=True,
     )
-    # Keep old field for compatibility with your form
+   
     offender_name = models.CharField(max_length=255, blank=True)
 
-    # Venue is a simple string in the current codebase
+  
     venue = models.CharField(max_length=255)
 
     WARNING_CHOICES = [
