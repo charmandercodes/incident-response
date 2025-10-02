@@ -123,7 +123,7 @@ def update_incident(request, pk):
         if form.is_valid():
             form.save()
             return redirect("home")
-        # fallthrough to show errors
+        
     else:
         form = IncidentForm(instance=incident)
     return render(request, "a_incidents/incident_form.html", {"form": form, "incident": incident})
