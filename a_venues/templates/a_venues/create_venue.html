@@ -1,73 +1,17 @@
-{% extends 'a_incidents/base.html' %}
+{% extends "a_venues/base.html" %}
 
 {% block content %}
-<section class="bg-white dark:bg-gray-900">
-    <div class="max-w-2xl px-4 py-8 mx-auto lg:py-16">
-      <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Create Venue</h2>
-      
-      <form method="post">
-        {% csrf_token %}
+<div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6 mt-8">
+  <h1 class="text-2xl font-semibold text-gray-800 mb-6">Create Venue</h1>
 
-        <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
-          <!-- Name field -->
-          <div class="sm:col-span-2">
-            <label for="{{ form.name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Name
-            </label>
-            {{ form.name }}
-            {% if form.name.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.name.errors }}</p>
-            {% endif %}
-          </div>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
 
-          <!-- Description field -->
-          <div class="sm:col-span-2">
-            <label for="{{ form.description.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Description
-            </label>
-            {{ form.description }}
-            {% if form.description.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.description.errors }}</p>
-            {% endif %}
-          </div>
-
-          <!-- Address field -->
-          <div class="sm:col-span-2">
-            <label for="{{ form.address.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Address
-            </label>
-            {{ form.address }}
-            {% if form.address.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.address.errors }}</p>
-            {% endif %}
-          </div>
-
-          <!-- City field -->
-          <div class="sm:col-span-1">
-            <label for="{{ form.city.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              City
-            </label>
-            {{ form.city }}
-            {% if form.city.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.city.errors }}</p>
-            {% endif %}
-          </div>
-
-          <!-- State dropdown field -->
-          <div class="sm:col-span-1">
-            <label for="{{ form.state.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              State
-            </label>
-            {{ form.state }}
-            {% if form.state.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.state.errors }}</p>
-            {% endif %}
-          </div>
-
-          <!-- Postal Code field -->
-          <div class="sm:col-span-1">
-            <label for="{{ form.postal_code.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Postal Code
-            </label>
-            {{ form.postal_code }}
-            {%
+    <button type="submit" 
+            class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">
+      Save Venue
+    </button>
+  </form>
+</div>
+{% endblock %}

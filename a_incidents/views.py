@@ -45,9 +45,6 @@ def create_incident(request):
     return render(request, 'a_incidents/create_incident.html', {'form': form})
 
 
-# ----------------------------
-# Update Incident
-# ----------------------------
 @login_required
 def update_incident(request, pk):
     incident = get_object_or_404(Incident, pk=pk)
@@ -57,12 +54,18 @@ def update_incident(request, pk):
         if form.is_valid():
             form.save()
             return redirect('home')
+        else:
+            # Add this to see form errors
+            print(f"Form errors: {form.errors}")
     else:
         form = IncidentForm(instance=incident)
 
-    return render(request, 'a_incidents/incident_form.html', {'form': form})
-
-
+    # Use the same template as create_incident or create a dedicated update template
+    return render(request, 'a_incidents/create_incident.html', {
+        'form': form,
+        'incident': incident,
+        'is_update': True,  # Optional: to show different heading/button text
+    })
 # ----------------------------
 # Delete Incident
 # ----------------------------
