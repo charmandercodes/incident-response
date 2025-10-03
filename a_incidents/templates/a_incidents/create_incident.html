@@ -1,89 +1,67 @@
-{% extends 'a_incidents/base.html' %}
-
+{% extends "a_incidents/base.html" %}
 {% block content %}
-<section class="bg-white dark:bg-gray-900">
-    <div class="max-w-2xl px-4 py-8 mx-auto lg:py-16">
-      <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Create Incident</h2>
-      
-      <form method="post">
-        {% csrf_token %}
-  
-        <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
-          <!-- Title field -->
-          <div class="sm:col-span-2">
-            <label for="{{ form.title.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Title
-            </label>
-            {{ form.title }}
-            {% if form.title.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.title.errors }}</p>
-            {% endif %}
-          </div>
-  
-          <!-- Description field -->
-          <div class="sm:col-span-2">
-            <label for="{{ form.description.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Description
-            </label>
-            {{ form.description }}
-            {% if form.description.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.description.errors }}</p>
-            {% endif %}
-          </div>
 
-          <!-- Venue field -->
-          <div class="sm:col-span-2">
-            <label for="{{ form.venue.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Venue
-            </label>
-            {{ form.venue }}
-            {% if form.venue.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.venue.errors }}</p>
-            {% endif %}
-          </div>
+<div class="max-w-4xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-3xl font-semibold text-gray-100">Create Incident</h1>
+    <p class="text-sm text-gray-400 mt-1">Add a new record. All fields below are saved.</p>
+  </div>
 
-          <!-- Offender Name field -->
-          <div class="sm:col-span-2">
-            <label for="{{ form.offender_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              Offender Name
-            </label>
-            {{ form.offender_name }}
-            {% if form.offender_name.errors %}
-              <p class="text-red-600 text-sm mt-1">{{ form.offender_name.errors }}</p>
-            {% endif %}
-          </div>
-          <div class="sm:col-span-2">
-            <label for="{{ form.warning.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                Warning Status
-            </label>
-            {{ form.warning }}
-            {% if form.warning.errors %}
-                <p class="text-red-600 text-sm mt-1">{{ form.warning.errors }}</p>
-            {% endif %}
-          </div>
-        
-          <!-- Ban Select -->
-          <div class="sm:col-span-2">
-              <label for="{{ form.ban.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                  Ban Status
-              </label>
-              {{ form.ban }}
-              {% if form.ban.errors %}
-                  <p class="text-red-600 text-sm mt-1">{{ form.ban.errors }}</p>
-              {% endif %}
-          </div>
-        </div>
-     
-  
-        <button type="submit"
-          class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-700">
-          Create
-        </button>
-        <a href="{% url 'home' %}" 
-           class="ml-2 inline-block text-sm text-gray-500 hover:underline dark:text-gray-400">
-          Cancel
-        </a>
-      </form>
+  <form method="post" novalidate class="space-y-4">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="p-3 rounded bg-red-900/30 text-red-200 text-sm">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-1">Title</label>
+      {{ form.title }}
+      {% for e in form.title.errors %}<p class="text-xs text-red-300 mt-1">{{ e }}</p>{% endfor %}
     </div>
-  </section>
-{% endblock content %}
+
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+      {{ form.description }}
+      {% for e in form.description.errors %}<p class="text-xs text-red-300 mt-1">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-1">Venue</label>
+      {{ form.venue }}
+      {% for e in form.venue.errors %}<p class="text-xs text-red-300 mt-1">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-1">Offender Name</label>
+      {{ form.offender_name }}
+      {% for e in form.offender_name.errors %}<p class="text-xs text-red-300 mt-1">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">Warning</label>
+        {{ form.warning }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">Ban</label>
+        {{ form.ban }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-1">Severity</label>
+        {{ form.severity }}
+      </div>
+    </div>
+
+    <div class="pt-2 flex gap-2">
+      <button type="submit"
+              class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300
+                     font-medium rounded-lg text-sm px-4 py-2.5">Save Incident</button>
+      <a href="{% url 'home' %}" class="text-sm px-4 py-2.5 border border-gray-700 text-gray-200 rounded-lg">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Combined Incident Report</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; padding:16px }
+    h1,h2,h3 { margin:.6rem 0 }
+    table { border-collapse:collapse; width:100%; margin-bottom:16px }
+    th, td { border:1px solid #ddd; padding:6px; text-align:left }
+    th { background:#f6f6f6 }
+    ol { padding-left:1.25rem }
+  </style>
+</head>
+<body>
+  <h1>Combined Incident Report</h1>
+
+  <h2>Summary</h2>
+
+  <h3>Totals by Venue</h3>
+  <table>
+    <tr><th>Venue</th><th>Total incidents</th></tr>
+    {% for row in by_venue %}
+      <tr><td>{{ row.venue }}</td><td>{{ row.total }}</td></tr>
+    {% empty %}
+      <tr><td colspan="2">No venue data.</td></tr>
+    {% endfor %}
+  </table>
+
+  {% if by_type %}
+    <h3>Totals by Type</h3>
+    <table>
+      <tr><th>Type</th><th>Total incidents</th></tr>
+      {% for row in by_type %}
+        <tr><td>{{ row.type }}</td><td>{{ row.total }}</td></tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+
+  {% if repeat_offenders %}
+    <h3>Repeat Offenders</h3>
+    <table>
+      <tr><th>Name</th><th>Incident Count</th></tr>
+      {% for off in repeat_offenders %}
+        <tr><td>{{ off }}</td><td>{{ off.inc_count }}</td></tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+
+  <h2>Incidents</h2>
+  <ol>
+    {% for inc in incidents %}
+      <li>
+        <strong>#{{ inc.id }} {{ inc.title }}</strong><br>
+        {% if inc.venue %}Venue: {{ inc.venue }} |{% endif %}
+        Severity: {% if inc.severity %}{{ inc.get_severity_display }}{% else %}-{% endif %}
+        <br>
+        {{ inc.description|default_if_none:"" }}
+      </li>
+    {% empty %}
+      <li>No incidents selected.</li>
+    {% endfor %}
+  </ol>
+</body>
+</html>
