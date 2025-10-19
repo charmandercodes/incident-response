@@ -2,65 +2,35 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
-from django.db.models import Q, QuerySet
-
-from a_incidents.models import Incident
+from django.db.models import Q
+from .models import Incident
 from .forms import IncidentForm
 
 
-def _apply_filters_and_sorting(request, qs: QuerySet) -> QuerySet:
-    search_query = request.GET.get("search", "").strip()
-    if search_query:
-        qs = qs.filter(
-            Q(title__icontains=search_query)
-            | Q(description__icontains=search_query)
-            | Q(venue__icontains=search_query)
-            | Q(offender_name__icontains=search_query)
-        )
-
-    venue_params = [v.strip() for v in request.GET.getlist("venue") if v.strip()]
-    if venue_params:
-        qs = qs.filter(venue__in=venue_params)
-
-    sort = request.GET.get("sort")
-    if sort == "severity_asc":
-        qs = qs.order_by("severity", "-created_at")
-    elif sort == "severity_desc":
-        qs = qs.order_by("-severity", "-created_at")
-    else:
-        qs = qs.order_by("-created_at")
-
-    return qs
-
-
+# ----------------------------
+# Home / Incident List View
+# ----------------------------
 def home_page(request):
-    incidents = _apply_filters_and_sorting(request, Incident.objects.all())
+    incidents = Incident.objects.all().order_by('-created_at')
 
-    venues = (
-        Incident.objects.exclude(venue__isnull=True)
-        .exclude(venue__exact="")
-        .values_list("venue", flat=True)
-        .distinct()
-        .order_by("venue")
-    )
+    # Handle search
+    search_query = request.GET.get('search', '')
+    if search_query:
+        incidents = incidents.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(venue__icontains=search_query) |
+            Q(offender__name__icontains=search_query)  # Search on ForeignKey
+        ).distinct()
 
-    sel_venues = request.GET.getlist("venue")
-    search = request.GET.get("search", "")
-    sort = request.GET.get("sort", "")
-
-    return render(
-        request,
-        "a_incidents/home.html",
-        {
-            "incidents": incidents,
-            "venues": venues,
-            "sel_venues": sel_venues,
-            "search": search,
-            "sort": sort,
-        },
-    )
+    return render(request, 'a_incidents/home.html', {
+        'incidents': incidents
+    })
 
 
+# ----------------------------
+# Create Incident
+# ----------------------------
 @login_required
 def create_incident(request):
     if request.method == "POST":
@@ -68,6 +38,7 @@ def create_incident(request):
         if form.is_valid():
             incident = form.save()
             send_incident_notification(incident, request.user)
+            return redirect('home')
             return redirect("home")
         # fallthrough to re-render with errors
     else:
@@ -75,10 +46,52 @@ def create_incident(request):
     return render(request, "a_incidents/create_incident.html", {"form": form})
 
 
+
+@login_required
+def update_incident(request, pk):
+    incident = get_object_or_404(Incident, pk=pk)
+
+    if request.method == "POST":
+        form = IncidentForm(request.POST, instance=incident)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+        else:
+            # Add this to see form errors
+            print(f"Form errors: {form.errors}")
+    else:
+        form = IncidentForm(instance=incident)
+
+    # Use the same template as create_incident or create a dedicated update template
+    return render(request, 'a_incidents/create_incident.html', {
+        'form': form,
+        'incident': incident,
+        'is_update': True,  # Optional: to show different heading/button text
+    })
+# ----------------------------
+# Delete Incident
+# ----------------------------
+@login_required
+def delete_incident(request, pk):
+    incident = get_object_or_404(Incident, pk=pk)
+
+    if request.method == "POST":
+        incident.delete()
+        return redirect('home')
+
+    return redirect('home')  # Optional fallback if someone tries GET
+
+
+# ----------------------------
+# Email Notification
+# ----------------------------
 def send_incident_notification(incident, created_by):
-    staff_emails = ["rehaan.rahman6@gmail.com"]
+    # Hardcode emails for testing
+    staff_emails = ['rehaan.rahman6@gmail.com']
+
     if not staff_emails:
         return
+
     subject = f"New Incident Reported: {incident.title}"
     message = f"""
 A new incident has been reported:
@@ -92,6 +105,9 @@ Date: {incident.created_at.strftime('%B %d, %Y at %I:%M %p') if hasattr(incident
 Description:
 {incident.description}
 
+Offender:
+{incident.offender.name if incident.offender else 'N/A'}
+
 Please log in to the system to review the full details.
     """.strip()
     try:
@@ -102,28 +118,15 @@ Please log in to the system to review the full details.
             recipient_list=staff_emails,
             fail_silently=True,
         )
-    except Exception:
-        pass
+        print("Email sent successfully!")
+    except Exception as e:
+        print(f"Failed to send notification email: {e}")
 
 
+# ----------------------------
+# PDF Report Placeholder
+# ----------------------------
 @login_required
-def delete_incident(request, pk):
+def incident_pdf_report(request, pk):
     incident = get_object_or_404(Incident, pk=pk)
-    if request.method == "POST":
-        incident.delete()
-        return redirect("home")
-    return render(request, "a_incidents/confirm_delete.html", {"incident": incident})
-
-
-@login_required
-def update_incident(request, pk):
-    incident = get_object_or_404(Incident, pk=pk)
-    if request.method == "POST":
-        form = IncidentForm(request.POST, instance=incident)
-        if form.is_valid():
-            form.save()
-            return redirect("home")
-        
-    else:
-        form = IncidentForm(instance=incident)
-    return render(request, "a_incidents/incident_form.html", {"form": form, "incident": incident})
+    return render(request, 'a_incidents/incident_pdf.html', {'incident': incident})

@@ -1,6 +1,35 @@
 {% extends "a_incidents/base.html" %}
 {% block content %}
 
+<section class="bg-white dark:bg-gray-900">
+    <div class="max-w-2xl px-4 py-8 mx-auto lg:py-16">
+      <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Update Incident</h2>
+      
+      <form method="post" action="{% url 'update_incident' incident.pk %}">
+        {% csrf_token %}
+  
+        <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
+          <!-- Title field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.title.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Title
+            </label>
+            {{ form.title }}
+            {% if form.title.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.title.errors }}</p>
+            {% endif %}
+          </div>
+  
+          <!-- Description field -->
+          <div class="sm:col-span-2">
+            <label for="{{ form.description.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              Description
+            </label>
+            {{ form.description }}
+            {% if form.description.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.description.errors }}</p>
+            {% endif %}
+          </div>
 <div class="max-w-4xl mx-auto">
   <div class="mb-6">
     <h1 class="text-3xl font-semibold text-gray-100">Update Incident</h1>
