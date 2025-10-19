@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Incident (Enhanced)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; padding:16px }
+    h1,h2,h3 { margin:.6rem 0 }
+    ul { padding-left:1.1rem }
+    li { margin: .2rem 0 }
+  </style>
+</head>
+<body>
+  <h1>Incident #{{ incident.id }} — {{ incident.title }}</h1>
+  <p>
+    {% if incident.venue %}<strong>Venue:</strong> {{ incident.venue }} · {% endif %}
+    <strong>Severity:</strong> {% if incident.severity %}{{ incident.get_severity_display }}{% else %}-{% endif %}
+  </p>
+  {% if incident.description %}<p>{{ incident.description }}</p>{% endif %}
+
+  <h2>Context</h2>
+  <p><strong>Past incidents at this venue:</strong> {{ venue_history_count }}</p>
+  {% if offender_history_count %}
+    <p><strong>Past incidents with same offender name:</strong> {{ offender_history_count }}</p>
+  {% endif %}
+
+  <h2>Recent Venue History</h2>
+  <ul>
+    {% for i in venue_history %}
+      <li>#{{ i.id }} {{ i.title }} — {% if i.severity %}{{ i.get_severity_display }}{% else %}-{% endif %}</li>
+    {% empty %}
+      <li>No other incidents recorded for this venue.</li>
+    {% endfor %}
+  </ul>
+
+  {% if offender_history %}
+    <h2>Recent Offender History</h2>
+    <ul>
+      {% for i in offender_history %}
+        <li>#{{ i.id }} {{ i.title }} — {% if i.severity %}{{ i.get_severity_display }}{% else %}-{% endif %}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</body>
+</html>

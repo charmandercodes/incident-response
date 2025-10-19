@@ -1,6 +1,7 @@
-from django.urls import include, path
-
+from django.urls import path
+from .views import combined_incident_report, enhanced_incident_report
 
 urlpatterns = [
-    # path('incident/<int:pk>/pdf/', IncidentPDFView.as_view(), name='incident_pdf_report'),
+    path("combined/", combined_incident_report, name="combined_incident_report"),
+    path("incident/<int:pk>/", enhanced_incident_report, name="enhanced_incident_report"),
 ]

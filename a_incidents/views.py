@@ -33,16 +33,18 @@ def home_page(request):
 # ----------------------------
 @login_required
 def create_incident(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = IncidentForm(request.POST)
         if form.is_valid():
             incident = form.save()
             send_incident_notification(incident, request.user)
             return redirect('home')
+            return redirect("home")
+        # fallthrough to re-render with errors
     else:
         form = IncidentForm()
+    return render(request, "a_incidents/create_incident.html", {"form": form})
 
-    return render(request, 'a_incidents/create_incident.html', {'form': form})
 
 
 @login_required
@@ -96,8 +98,9 @@ A new incident has been reported:
 
 Title: {incident.title}
 Venue: {incident.venue}
-Reported by: {created_by.username}
-Date: {incident.created_at.strftime('%B %d, %Y at %I:%M %p')}
+Severity: {incident.get_severity_display() if hasattr(incident, 'get_severity_display') else getattr(incident, 'severity', '-') }
+Reported by: {getattr(created_by, 'username', 'unknown')}
+Date: {incident.created_at.strftime('%B %d, %Y at %I:%M %p') if hasattr(incident, 'created_at') else ''}
 
 Description:
 {incident.description}
@@ -106,8 +109,7 @@ Offender:
 {incident.offender.name if incident.offender else 'N/A'}
 
 Please log in to the system to review the full details.
-    """
-
+    """.strip()
     try:
         send_mail(
             subject=subject,
