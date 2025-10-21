@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     # third party apps
     'django_cotton',
     'django_filters',
+
+    'a_notifications'
 ]
 
 MIDDLEWARE = [
