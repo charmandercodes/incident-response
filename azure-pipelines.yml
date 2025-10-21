@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  name: "Self Hosted Alyssa"
 
 variables:
   DJANGO_SETTINGS_MODULE: a_core.settings
@@ -36,3 +36,12 @@ steps:
 - script: |
     uv run python manage.py test
   displayName: "Run tests"
+  - script: |
+    uv run pytest --junitxml=TEST-results.xml
+  displayName: "Run pytest and generate report"
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/TEST-results.xml'
+    testRunTitle: 'Django Unit Tests'
+  condition: succeededOrFailed()
