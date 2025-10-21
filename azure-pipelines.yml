@@ -36,7 +36,8 @@ steps:
 - script: |
     uv run python manage.py test
   displayName: "Run tests"
-  - script: |
+
+- script: |
     uv run pytest --junitxml=TEST-results.xml
   displayName: "Run pytest and generate report"
 
