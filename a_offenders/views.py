@@ -9,17 +9,22 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
+
 from .forms import OffenderForm
 from .models import Offender, Warning, Ban, IncidentOffender
 
+# notification helpers (from your notifications app)
+from a_notifications.utils import send_venue_ban, send_offender_ban, send_ban_notification
+
+
 def _venue_email_for(venue):
-    """Return the best email address from a Venue instance."""
-    # Your Venue has `email`, but we’ll be defensive.
+    """Return the best email address from a Venue instance (defensive)."""
     for attr in ("email", "contact_email", "notification_email"):
         addr = getattr(venue, attr, None)
         if addr:
             return addr
     return None
+
 
 def send_ban_notification(offender, ban, venue):
     """Email the venue with ban details, if venue has an email."""
@@ -52,7 +57,7 @@ def send_ban_notification(offender, ban, venue):
         message=body,
         from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
         recipient_list=[to_email],
-        fail_silently=False,  # flip to True in prod if you prefer silent failures
+        fail_silently=False,
     )
 
 def offender_page(request):
@@ -92,6 +97,7 @@ def create_offender(request):
         if form.is_valid():
             offender = form.save()
 
+            # Create warning if requested
             if form.cleaned_data.get("warning_now"):
                 Warning.objects.create(
                     offender=offender,
@@ -101,26 +107,62 @@ def create_offender(request):
                     created_by=request.user,
                 )
 
+            # Create ban if requested
             if form.cleaned_data.get("ban_now"):
                 start = timezone.localdate()
                 dur = form.cleaned_data.get("ban_duration") or ""
                 end = None if dur in ("", "permanent") else start + timedelta(days=int(dur))
 
-                ban = Ban.objects.create(
-                    offender=offender,
-                    reason=form.cleaned_data.get("ban_reason") or "Auto-created at offender creation.",
-                    venue="",  # your Ban.venue is a CharField label
-                    start_date=start,
-                    end_date=end,
-                    issued_by=request.user,
-                )
-                if form.cleaned_data.get("notify_venue") and form.cleaned_data.get("venue_to_notify"):
-                    send_ban_notification(offender, ban, form.cleaned_data["venue_to_notify"])
+                # venue_to_notify is a ModelChoiceField -> returns a Venue instance or None
+                venue_obj = form.cleaned_data.get("venue_to_notify")
+
+                # IMPORTANT:
+                # If your Ban.venue is defined as a ForeignKey to a_venues.Venue, set venue=venue_obj.
+                # If Ban.venue is a CharField (current), store a readable label (venue_obj.name) and
+                # attach venue_obj to the ban instance for runtime use in notifications.
+                ban_kwargs = {
+                    "offender": offender,
+                    "reason": form.cleaned_data.get("ban_reason") or "Auto-created at offender creation.",
+                    "start_date": start,
+                    "end_date": end,
+                    "issued_by": request.user,
+                }
+
+                # Try to detect whether Ban.venue is a FK by checking model field
+                try:
+                    ban_field = Ban._meta.get_field("venue")
+                    is_fk = ban_field.get_internal_type() in ("ForeignKey",)
+                except Exception:
+                    is_fk = False
+
+                if is_fk:
+                    # If venue is a FK, store the object directly
+                    ban_kwargs["venue"] = venue_obj
+                else:
+                    # Keep storing the label (existing behaviour) to avoid migration,
+                    # but attach the Venue object at runtime for notifications
+                    ban_kwargs["venue"] = venue_obj.name if venue_obj else ""
+
+                ban = Ban.objects.create(**ban_kwargs)
+
+                # If we stored a label (CharField case), attach full object for notifications
+                if not is_fk and venue_obj:
+                    # transient runtime attribute used by send_venue_ban()
+                    ban.venue_obj = venue_obj
+
+                # Only send a venue notification if requested and venue chosen
+                if form.cleaned_data.get("notify_venue") and venue_obj:
+                    # Prefer the centralised notifier (works with FK or with ban.venue_obj)
+                    send_venue_ban(ban)
+
+                # Notify the offender (best-effort; your send_offender_ban should be robust)
+                send_offender_ban(ban)
 
             return redirect("offender-home")
     else:
         form = OffenderForm()
     return render(request, "a_offenders/create_offender.html", {"form": form})
+
 
 @login_required
 def update_offender(request, pk):
@@ -143,21 +185,41 @@ def update_offender(request, pk):
                 start = timezone.localdate()
                 dur = form.cleaned_data.get("ban_duration") or ""
                 end = None if dur in ("", "permanent") else start + timedelta(days=int(dur))
-                Ban.objects.create(
-                    offender=offender,
-                    reason=form.cleaned_data.get("ban_reason") or "Auto-created during offender update.",
-                    venue="",
-                    start_date=start,
-                    end_date=end,
-                    issued_by=request.user,
-                )
-                if form.cleaned_data.get("notify_venue") and form.cleaned_data.get("venue_to_notify"):
-                    send_ban_notification(offender, ban, form.cleaned_data["venue_to_notify"])
+
+                venue_obj = form.cleaned_data.get("venue_to_notify")
+
+                ban_kwargs = {
+                    "offender": offender,
+                    "reason": form.cleaned_data.get("ban_reason") or "Auto-created during offender update.",
+                    "start_date": start,
+                    "end_date": end,
+                    "issued_by": request.user,
+                }
+
+                try:
+                    ban_field = Ban._meta.get_field("venue")
+                    is_fk = ban_field.get_internal_type() in ("ForeignKey",)
+                except Exception:
+                    is_fk = False
+
+                if is_fk:
+                    ban_kwargs["venue"] = venue_obj
+                else:
+                    ban_kwargs["venue"] = venue_obj.name if venue_obj else ""
+
+                ban = Ban.objects.create(**ban_kwargs)
+
+                if not is_fk and venue_obj:
+                    ban.venue_obj = venue_obj
+
+                if form.cleaned_data.get("notify_venue") and venue_obj:
+                    send_venue_ban(ban)
 
             return redirect("offender-home")
     else:
         form = OffenderForm(instance=offender)
     return render(request, "a_offenders/update_offender.html", {"form": form, "offender": offender})
+
 
 def offender_detail(request, pk):
     offender = get_object_or_404(
@@ -179,6 +241,7 @@ def offender_detail(request, pk):
         "incident_links": offender.incident_links.all(),
     }
     return render(request, "a_offenders/detail.html", context)
+
 
 @login_required
 def delete_offender(request, pk):
