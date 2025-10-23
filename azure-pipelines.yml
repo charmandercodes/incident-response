@@ -1,52 +1,38 @@
 trigger:
 - main
 
-jobs:
-- job: BuildAndTest
-  displayName: "Build, Migrate, and Test"
-  pool:
-    name: "Self Hosted Alyssa"
-  variables:
-    DJANGO_SETTINGS_MODULE: a_core.settings
+pool:
+  vmImage: ubuntu-latest
 
-  steps:
-    # Install uv
-    - script: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        export PATH="$HOME/.cargo/bin:$PATH"
-      displayName: "Install uv"
+variables:
+  DJANGO_SETTINGS_MODULE: a_core.settings
+  PYTHON_VERSION: "3.13"
 
-    # Create virtual environment and install dependencies
-    - script: |
-        uv venv .venv
-        uv run pip install --upgrade pip
-        uv run pip install -r requirements.txt
-      displayName: "Install dependencies"
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: "$(PYTHON_VERSION)"
+    architecture: "x64"
 
-    # Run migrations
-    - script: |
-        uv run python manage.py makemigrations --check --dry-run
-        uv run python manage.py migrate
-      displayName: "Run migrations"
+- script: |
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    echo '##vso[task.prependpath]$HOME/.cargo/bin'
+  displayName: "Install uv"
 
-    # Django system checks
-    - script: |
-        uv run python manage.py check
-      displayName: "Django system checks"
+- script: |
+    uv venv .venv
+    uv pip install -r requirements.txt
+  displayName: "Install dependencies"
 
-    # Run Django unit tests
-    - script: |
-        uv run python manage.py test
-      displayName: "Run tests"
+- script: |
+    uv run python manage.py makemigrations --check --dry-run
+    uv run python manage.py migrate
+  displayName: "Run migrations"
 
-    # Run pytest and generate JUnit XML report
-    - script: |
-        uv run pytest --junitxml=$(System.DefaultWorkingDirectory)/TEST-results.xml
-      displayName: "Run pytest and generate report"
+- script: |
+    uv run python manage.py check
+  displayName: "Django system checks"
 
-    # Publish test results
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFiles: '**/TEST-results.xml'
-        testRunTitle: 'Django Unit Tests'
-      condition: succeededOrFailed()
+- script: |
+    uv run python manage.py test
+  displayName: "Run tests"
