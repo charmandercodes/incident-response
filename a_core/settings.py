@@ -13,38 +13,32 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
+# Static files
+STATIC_URL = '/static/'
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-lp87-&j#ievaga4-d(q1cd0o)c)y98k!s^%%f10e=uqy3fj7zb'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
 
-
 # Application definition
-
 INSTALLED_APPS = [
-    # django apps
+    # Django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # my apps
+    
+    # My apps
     'a_incidents',  
     'a_venues',
     'a_auth',
@@ -52,7 +46,8 @@ INSTALLED_APPS = [
     'a_reports',
     'a_offenders',
     'a_analytics',
-    # third party apps
+    
+    # Third-party apps
     'django_cotton',
     'django_filters',
 ]
@@ -72,7 +67,7 @@ ROOT_URLCONF = 'a_core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Make sure you have a 'templates' folder
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,10 +81,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'a_core.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -97,10 +89,7 @@ DATABASES = {
     }
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -116,35 +105,25 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = 'static/'
-
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-
+# Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # or your email provider
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'rehaan.rahman6@gmail.com'
-EMAIL_HOST_PASSWORD = 'abhp vrvf seja gbea'  # Use app password for Gmail
+EMAIL_HOST_PASSWORD = 'abhp vrvf seja gbea'  # Use Gmail App Password
 DEFAULT_FROM_EMAIL = 'rehaan.rahman6@gmail.com'
+
+# Authentication redirects
+LOGIN_URL = '/login/'             # URL for login page
+LOGIN_REDIRECT_URL = '/'          # URL after successful login
+LOGOUT_REDIRECT_URL = '/'         # URL after logout

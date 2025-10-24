@@ -2,11 +2,10 @@ from django.db import models
 from a_venues.models import Venue
 from a_offenders.models import Offender
 
-
 class Incident(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    
+
     INCIDENT_TYPE_CHOICES = [
         ('theft', 'Theft'),
         ('assault', 'Assault'),
@@ -19,32 +18,26 @@ class Incident(models.Model):
         default='other'
     )
 
+    # Venue as ForeignKey
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
-    
-    # Keep existing ForeignKey (someone else's part)
+
+    # Single main offender (optional)
     offender = models.ForeignKey(
         Offender,
         on_delete=models.CASCADE,
-        related_name='primary_incidents',  # <-- change related_name to avoid clash
+        related_name='primary_incidents',
         null=True,
         blank=True
     )
 
-    # Your ManyToManyField for multiple offenders
+    # Multiple offenders (optional)
     offenders = models.ManyToManyField(
         Offender,
-        related_name='incidents',  # <-- make sure this is different from above
+        related_name='group_incidents',
         blank=True
     )
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    
-    title = models.CharField(max_length=255)
-    description = models.TextField()
 
-    
+    # Severity
     SEVERITY_CHOICES = [
         (1, "Low"),
         (2, "Medium-Low"),
@@ -54,24 +47,7 @@ class Incident(models.Model):
     ]
     severity = models.IntegerField(choices=SEVERITY_CHOICES, default=3)
 
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    
-    offender = models.ForeignKey(
-        "a_offenders.Offender",
-        on_delete=models.CASCADE,
-        related_name="incidents",
-        null=True,
-        blank=True,
-    )
-   
-    offender_name = models.CharField(max_length=255, blank=True)
-
-  
-    venue = models.CharField(max_length=255)
-
+    # Warning & Ban
     WARNING_CHOICES = [
         ("no", "No"),
         ("yes", "Yes"),
@@ -83,6 +59,10 @@ class Incident(models.Model):
         ("yes", "Yes"),
     ]
     ban = models.CharField(max_length=20, choices=BAN_CHOICES, default="no")
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Incident: {self.title} at {self.venue}"
